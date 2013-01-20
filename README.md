@@ -1,2 +1,2 @@
-DocumentClustering
+Document Clustering
 ==================
