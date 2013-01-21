@@ -92,6 +92,7 @@ public class ClusterViewer extends JPanel {
 
         int width = 0;
         Iterator<SuffixTree.Edge> edgeIt = node.Edges();
+        
         while(edgeIt.hasNext()) {
             SuffixTree.Edge edge = edgeIt.next();
             NodeInfo child = LayoutNodes(edge.NextNode(), level + 1);
@@ -144,8 +145,8 @@ public class ClusterViewer extends JPanel {
 
             int middleX = (int)(nodeX +(childX - nodeX) * 0.5);
             int middleY = (int)(nodeY +(childY - nodeY) * 0.5);
-
             double angle = Math.atan2(childY - nodeY, childX - nodeX);
+            
             if(Math.abs(angle) > 1.68) {
                 middleY = (int)(nodeY +(childY - nodeY) * 0.5);
                 angle += Math.PI;
