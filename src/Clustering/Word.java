@@ -26,16 +26,16 @@ package Clustering;
 
 public final class Word {
     private String word_;
-    private double weight_; // Importanta cuvantului.
+    private double weight_;
     /*
-     * Constructori.
+     * Constructors.
      */
     public Word(String word) {
         word_ = word;
     }
 
     /*
-     * Metode publice.
+     * Public methods.
      */
     public String Word() { return word_; }
     public void SetWord(String value) { word_ = value; }
@@ -58,7 +58,7 @@ public final class Word {
     }
 
     @Override
-    public String toString() { // Pentru debugging.
+    public String toString() {
         return word_ + ", W=" + Double.toString(weight_);
     }
 }

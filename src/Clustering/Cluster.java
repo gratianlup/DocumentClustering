@@ -35,7 +35,7 @@ public final class Cluster implements Comparable {
     private String label_;
 
     /*
-    * Constructori.
+    * Constructors.
     */
     public Cluster(int docCapacity, int phraseCapacity) {
         documents_ = new ArrayList<Document>(docCapacity);
@@ -48,16 +48,16 @@ public final class Cluster implements Comparable {
     }
 
     /*
-    * Metode publice.
+    * Public methods.
     */
-    // Calculeaza importanta unui cluster pe baza documentelor ce il definesc.
+    // Computes the weight of the clusters based on the contained documents.
     public void ComputeWeight() {
-        // Importanta unui cluster este data de produsul dintre numarul de documente,
-        // lungimea (ajustata) a frazei si suma importantei cuvintelor ce compun frazele.
-        double wordWeight = 0; // Importanta tuturor cuvintelor.
-
-        
+        // The weight is equal to the producet between the number of documents,
+        // the (adjusted) length of the senteces and the sum of the weight
+        // of each words part of the sentences.
+        double wordWeight = 0;        
         int count = phrases_.size();
+        
         for(int i = 0; i < count; i++) {
             wordWeight += phrases_.get(i).Weight();
         }
@@ -65,17 +65,18 @@ public final class Cluster implements Comparable {
         weight_ = documents_.size() * PhrasesWeight() * wordWeight;
     }
 
-    // Verifica daca cluster-ul curent si cel dat sunt similare.
-    // (au o parte dintre documente in comun).
+    // Verifies if the cluster and the specified one are similar
+    // (they haev some documents in common).
     public boolean IsSimilarTo(Cluster other, double overlapDegree) {
         assert(other != null);
         // ------------------------------------------------
-        // Determina documentele comune.
+        // Find the common documents. If there are only a few documents,
+        // a linear search is used; otherwise the search uses a hash table.
         int common = 0;
 
         if((documents_.size() <= 3) &&
-            (other.documents_.size() <= 3)) {
-            // Foloseste o cautare simpla pentru putine documente.
+           (other.documents_.size() <= 3)) {
+            // Few documents case, do a linear search.
             for(int i = 0; i < documents_.size(); i++) {
                 Document doc = documents_.get(i);
                 if(other.documents_.contains(doc)) {
@@ -84,17 +85,19 @@ public final class Cluster implements Comparable {
             }
         }
         else {
-            // Foloseste o tabela hash si introduce documentele dintr-un cluster.
+            // Many documents case, use a hash table.
             Hashtable<Document, Document> hash = new Hashtable<Document, Document>();
-            
             int count = documents_.size();
+            
             for(int i = 0; i < count; i++) {
                 Document doc = documents_.get(i);
                 hash.put(doc, doc);
             }
 
-            // Verifica care dintre documentele celuilalt cluster se afla in tabela.
+            // Check which of the documents from the other clusters
+            // are found in the hash table.
             count = other.documents_.size();
+            
             for(int i = 0; i < count; i++) {
                 if(hash.containsKey(other.documents_.get(i))) {
                     common++;
@@ -106,7 +109,8 @@ public final class Cluster implements Comparable {
                ((double)common / (double)other.documents_.size()) > overlapDegree;
     }
 
-    // Uneste toate cluster-ele date.
+    // Unifies all clusters from the specified list
+    // into a single cluster containing the union of the documents.
     public static Cluster Merge(List<Cluster> clusters) {
         assert(clusters != null);
         // ------------------------------------------------
@@ -115,7 +119,8 @@ public final class Cluster implements Comparable {
                                          clusters.size());
         Hashtable<Document, Document> hash = new Hashtable<Document, Document>();
 
-        // Fiecare document apare o singura data in noul cluster.
+        // Each document must appear a single time in the new cluster
+        // (the list must behave as a mathematical set).
         for(int i = 0; i < clusters.size(); i++) {
             Cluster cluster = clusters.get(i);
             List<Document> docs = cluster.Documents();
@@ -125,20 +130,22 @@ public final class Cluster implements Comparable {
                 hash.put(doc, doc);
             }
 
-            // Toate frazele din clusterele primite vor aparea in cel nou.
+            // All sentences from the clusters must appear in the new one.
             List<Phrase> phrases = cluster.Phrases();
+            
             for(int j = 0; j < phrases.size(); j++) {
                 allPhrases.add(phrases.get(j));
             }
         }
 
-        // Adauga documentele la noul cluster.
+        // Add the documents to the new cluster.
         Iterator<Document> docIt = hash.keySet().iterator();
+        
         while(docIt.hasNext()) {
             newCluster.documents_.add(docIt.next());
         }
 
-        // Seteaza lista cu fraze.
+        // Associated the sentences with the new cluster.
         newCluster.SetPhrases(allPhrases);
         return newCluster;
     }
@@ -153,12 +160,12 @@ public final class Cluster implements Comparable {
     public void SetLabel(String value) { label_ = value; }
 
     /*
-    * Metode private.
+    * Private methods.
     */
     private double PhrasesWeight() {
         double sum = 0;
-
         int count = phrases_.size();
+        
         for(int i = 0; i < count; i++) {
             sum += phrases_.get(i).WordCount();            
         }
@@ -171,13 +178,14 @@ public final class Cluster implements Comparable {
         }
     }
 
-    // Folosit la sortarea cluster-elor.
     public int compareTo(Object obj) {
+        // Used when sorting clusters based on their weight.
         if(this == obj) {
             return 0;
         }
 
         Cluster other = (Cluster)obj;
+        
         if(weight_ < other.weight_) {
             return 1;
         }

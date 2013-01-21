@@ -46,48 +46,48 @@ public class ClusterMerger {
     }
 
     /*
-    * Membrii.
+    * Private members.
     */
     private ArrayList<ClusterInfo> clusters_;
     private double overlapDegree_;
 
     /*
-    * Constructori.
+    * Constructors.
     */
     public ClusterMerger(List<Cluster> clusters, double overlapDegree) {
         clusters_ = new ArrayList<ClusterInfo>();
         overlapDegree_ = overlapDegree;
-
         int count = clusters.size();
+        
         for(int i = 0; i < count; i++) {
             clusters_.add(new ClusterInfo(clusters.get(i)));
         }
     }
 
     /*
-    * Metode publice.
+    * Public methods.
     */
-    // Determina grupuri de clustere cu aceleasi documente.
-    // Foloseste o parcurgere in latime pentru a gasi componentele conexe.
+    // Finds clusters containing the same documents.
     public List<Cluster> MergeClusters() {
-        // Identifica clusterele care au documente comune.
         ConnectClusters();
 
-        // Fiecare grup de clustere similare se afla intr-o componenta conexa.
-        // Identifica componentele conexe folosind cautarea in latime.
+        // Each group of similar clusters is found in the same connected component.
+        // Find the connext components using a breadth-first search.
+        int count = clusters_.size();
         Queue<ClusterInfo> queue = new LinkedList<ClusterInfo>();
         ArrayList<ArrayList<Cluster>> components =
                 new ArrayList<ArrayList<Cluster>>();
         
-        int count = clusters_.size();
         for(int i = 0; i < count; i++) {
             ClusterInfo cluster = clusters_.get(i);
+            
             if(cluster.Discovered()) {
-                // Cluster-ul a fost deja descoperit si face parte dintr-o componenta.
+                // The cluster has already been discovered
+                // and is part of a connected component.
                 continue;
             }
 
-            // Se incepe o noua componenta conexa.
+            // Start a new connect component.
             ArrayList<Cluster> component = new ArrayList<Cluster>();
             components.add(component);
 
@@ -97,7 +97,8 @@ public class ClusterMerger {
             FindComponent(queue, component);
         }
 
-        // Uneste cluster-ele din fiecare componenta.
+        // Unify the clusters from each connected component
+        // into a single one and add them to the resulting list.
         ArrayList<Cluster> clusters = new ArrayList<Cluster>(components.size());
 
         for(int i = 0; i < components.size(); i++) {
@@ -109,38 +110,41 @@ public class ClusterMerger {
     }
 
     /*
-    * Metode private.
+    * Private methods.
     */
-    // "Leaga" cluster-ele cu (aproximativ) aceleasi documente.
+    // Connects the clusters with (approximately) the same documents.
     private void ConnectClusters() {
-        // Compara fiecare cluster cu toate celelalte si adauga
-        // o muchie intre cele care sunt asemanatoare (creeaza un graf).
+        // Compare all pairs of clusters and add an edge
+        // between the ones that are similar.
         int count = clusters_.size();
+        
         for(int i = 0; i < count; i++) {
             for(int j = 0; j < count; j++) {
                 if(i == j) {
+                    // Don't compare a document with itself.
                     continue;
                 }
 
                 ClusterInfo a = clusters_.get(i);
                 ClusterInfo b = clusters_.get(j);
+                
                 if(a.Cluster().IsSimilarTo(b.Cluster(), overlapDegree_)) {
-                    // Documentele sunt similare, leaga-le.
+                    // The documents are similar enough, connect them.
                     a.Edges().add(b);
                 }
             }
         }
     }
-
-    // Gaseste o componenta conexa. Se presupune ca cluster-ul de start
-    // se afla deja adaugat in coada.
+    
+    // Finds a connected componend. It is presumed that the start node
+    // is already found in the specified queue.
     private void FindComponent(Queue<ClusterInfo> queue,
                                ArrayList<Cluster> component) {
         while(queue.size() > 0) {
             ClusterInfo info = queue.poll();
             component.add(info.Cluster());
 
-            // Adauga toate nodurile vecine.
+            // Add all neighbor nodes to the component.
             for(int i = 0; i < info.Edges().size(); i++) {
                 ClusterInfo next = info.Edges().get(i);
                 

@@ -30,22 +30,23 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public final class DocumentReader {
-    // Fiecare fraza trebuie sa se termine intr-un cuvant unic pentru a fi
-    // corect introdusa in arborele generalizat. Ex: $0, $1, ... $100, ...
+    // Each sentence must end in an unique word
+    // to be inserted properliy in the suffix tree.
+    // For example, $0, $1, ... $100, ...
     private static final String END_MARKER = "#";
 
     /*
-    * Membrii.
+    * Private members.
     */
     private IDocumentSource source_;
-    private LinkedHashMap<String, Word> words_; // Contine toate cuvintele gasite.
-    private HashMap<Word, Integer> wordDf_;     // In cate documente a aparut un cuvant.
+    private LinkedHashMap<String, Word> words_; // Contains all the found words.
+    private HashMap<Word, Integer> wordDf_;     // The number of documents in which a word has been found.
     private ArrayList<Document> documents_;
     private int phraseCount_;
     private SuffixTree tree_;
 
     /*
-     * Constructori.
+     * Constructors.
      */
     public DocumentReader(IDocumentSource source) {
         source_ = source;
@@ -56,15 +57,14 @@ public final class DocumentReader {
     }
 
     /*
-     * Metode publice.
+     * Public methods.
      */
-    // Citeste toate documentele care pot fi obtinute de la sursa data.
+    // Reads all documents from the specified source.
     public void Read() {
         while(source_.HasDocument()) {
             ReadDocument(source_);
         }
 
-        // Calculeaza importanta cuvintelor.
         ComputeWeights();
     }
 
@@ -76,9 +76,9 @@ public final class DocumentReader {
     public SuffixTree Tree() { return tree_; }
 
     /*
-     * Metode private.
+     * Private methods.
      */
-    // Citeste toate propozitiile dintr-un document si actualizeaza statisticile.
+    // Reads all sentences from a document and updates the statistics.
     private Document ReadDocument(IDocumentSource source) {
         Document doc = new Document(documents_.size());
 
@@ -90,25 +90,28 @@ public final class DocumentReader {
         return doc;
     }
 
-    // Citeste o propozitie din documentul dat.
+    // Reads and parses a sentence from the specified document.
     private void ReadSentence(Document doc, IDocumentSource source) {
-        int startIndex = doc.Count(); // Nr. de cuvinte inainte de a citi propozitia.
+        int startIndex = doc.Count(); // The number of words before the sentence.
         int endIndex;
 
         while(source.HasWord()) {
-            // Obtine cuvantul, apoi actualizeaza documentul si numarul de aparitii.
+            // Obtain the word, then update the document and the statistics.
             String wordStr = source.NextWord();
             Word word = words_.get(wordStr);
+            
             if(word != null) {
-                // Cuvantul a mai fost intalnit (posibil in alte documente).
+                // The word has been found before (possible in other documents too).
                 if(doc.ContainsWord(word) == false) {
-                    // Prima aparitie a cuvantului in documentul curent.
+                    // This is the first time the word has been found
+                    // in the current docuemtn, add an entry for it.
                     int newCount = wordDf_.get(word) + 1;
                     wordDf_.put(word, newCount);
                 }
             }
             else {
-                // Prima data cand se intalneste cuvantul.
+                // The first time when the word is found
+                // in any docuemtn, add an entry for it.
                 word = new Word(wordStr);
                 words_.put(wordStr, word);
                 wordDf_.put(word, 1);
@@ -117,49 +120,51 @@ public final class DocumentReader {
             doc.AddWord(word);
         }
 
-        // Adauga un marcator de sfarsit al frazei (necesar).
+        // Add a sentence end marker (required by the suffix tree).
         String marker = END_MARKER + Integer.toString(phraseCount_++);
         Word markerWord = new Word(marker);
         words_.put(marker, markerWord);
         wordDf_.put(markerWord, 1);
         doc.AddWord(markerWord);
 
-        // Introduce propozitia citita in arborele de sufixe.
+        // Add the read sentence to the suffix tree.
         endIndex = doc.Count();
         tree_.AddSentence(doc, startIndex, endIndex);
     }
 
-    // Calculeaza media a 'term frequency' din toate documentele.
+    // Computes the term frequence average for the specified word
+    // for all documents in which it is found.
     private double AverageTf(Word word) {
         double sum = 0;
-        
         int count = documents_.size();
+        
         for(int i = 0; i < count; i++) {
             sum += documents_.get(i).TermFrequency(word);
         }
 
-        return sum / (double)wordDf_.get(word); // Garantat diferit de 0.
+        // It is guaranteed that the words appears at least once.
+        return sum / (double)wordDf_.get(word);
     }
 
-    // Calculeaza importanta fiecarui cuvint citit.
-    // Importanta este data de produsul dintre numarul de aparitii ale cuvantului
-    // in documentul de care apartine (tf) inmultit cu inversul
-    // numarului de documente in care apare cuvantul (idf).
-    // Se presupune ca 'tf' este deja setat in campul 'Weight' al cuvintelor,
-    // iar 'df' trebuie sa se gaseasca in tabela 'wordDf'.
+    // Computes the weight of each read word.
     private void ComputeWeights() {
+        // The importante is equal to the product between the number of times
+        // the word appears in the document (term frequence) with 
+        // the inverted document frequence. It is presumed that the term frequence
+        // has been already computed and is availalbe in the 'Weight' field
+        // of each word, and the term frequence must be found in the 'wordDf' map.
+        Iterator<Word> wordIt = words_.values().iterator();
         int docs = documents_.size();
         
         if(docs == 0) {
             return;
         }
         
-        Iterator<Word> wordIt = words_.values().iterator();
         while(wordIt.hasNext()) {
             Word word = wordIt.next();
             double df = (double)wordDf_.get(word);
 
-            // Calculeaza importanta ('df' este garantat diferit de 0).
+            // Compute the weight ('df' guarantted greater than zero).
             double weight = (1.0 + Math.log10(AverageTf(word))) *
                             Math.log10(1.0 + ((double)docs / df));
             word.SetWeight(weight);

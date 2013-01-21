@@ -29,23 +29,24 @@ import java.util.Iterator;
 import java.util.List;
 
 public final class SuffixTree {
-    // Reprezinta un nod in arbore. Este de tip frunza daca nu are muchii.
+    // Represents a node in the tree.
+    // It is a leaf if it has no child nodes.
     public final class Node {
-        // Suffix node reprezinta primul sufix al textului format prin parcurgerea
-        // drumului de la radacina pana la nodul actual. Este punctul din arbore
-        // in care trebuie sa se faca urmatoarea insertie.
+        // The suffix node is the last node of the suffix obtained
+        // by considering all nodes from the root to it.
+        // It is the point where the next insertion must be made.
         private Node suffixNode_;
-        private HashMap<Word, Edge> edges_; // Muchiile care apartin de nod.
+        private HashMap<Word, Edge> edges_; // The edges to the child nodes.
 
         /*
-        * Constructori.
+        * Constructors.
         */
         public Node() {
             edges_ = new HashMap<Word, Edge>(4);
         }
 
         /*
-        * Metode publice.
+        * Public methods.
         */
         public Node SuffixNode() { return suffixNode_; }
         public void SetSuffixNode(Node value) { suffixNode_ = value; }
@@ -73,16 +74,17 @@ public final class SuffixTree {
         }
     }
 
-    // Reprezinta o muchie. Cuvintele asociate sunt stocate sub forma de indici.
+    // Represents an edge connecting two tree nodes.
+    // The associated words are stored as indices in the associated document.
     public final class Edge {
-        private Document document_; // Documentul de care cuvintele apartin.
-        private int firstIndex_;    // Primul cuvant din document aflat pe muchie.
-        private int lastIndex_;     // Ultimul cuvant din document.ls
-        private Node prevNode_;     // Nodurile de care apartine muchia.
-        private Node nextNode_;
+        private Document document_; // The document containing the words.
+        private int firstIndex_;    // The index of the first word found on the edge.
+        private int lastIndex_;     // The index of the last word found on the edge.
+        private Node prevNode_;     // The first node connected by the edge.
+        private Node nextNode_;     // The second node connected by the edge.
 
         /*
-        * Constructori.
+        * Constructors.
         */
         public Edge(Document doc, int first, int last,
                     Node previous, Node next) {
@@ -94,7 +96,7 @@ public final class SuffixTree {
         }
 
         /*
-        * Metode publice.
+        * Public methods.
         */
         public Document Document() { return document_; }
 
@@ -125,15 +127,14 @@ public final class SuffixTree {
         }
     }
 
-    // Reprezinta un sufix (relativ la un nod de origine).
-    // Folosit la adaugare.
+    // Represents a suffix. Used while building the suffix tree.
     public final class Suffix {
         private Node origin_;
         private int firstIndex_;
         private int lastIndex_;
 
         /*
-        * Constructori.
+        * Constructors.
         */
         public Suffix() {}
         public Suffix(Node origin, int first, int last) {
@@ -143,7 +144,7 @@ public final class SuffixTree {
         }
 
         /*
-        * Metode publice.
+        * Public methods.
         */
         public Node Origin() { return origin_; }
         public void SetOrigin(Node value) { origin_ = value; }
@@ -168,7 +169,7 @@ public final class SuffixTree {
     }
 
     /*
-    * Membrii.
+    * Private members.
     */
     private Suffix activePoint_;
     private Node root_;
@@ -176,7 +177,7 @@ public final class SuffixTree {
     private Document tempDoc;
 
     /*
-    * Constructori.
+    * Constructors.
     */
     public SuffixTree() {
         root_ = new Node();
@@ -184,7 +185,7 @@ public final class SuffixTree {
     }
 
     /*
-    * Metode publice.
+    * Public methods.
     */
     public void AddSentence(Document document, int start, int end) {
         assert(document != null);
@@ -194,45 +195,7 @@ public final class SuffixTree {
             activePoint_ = new Suffix(root_, 0, -1);
         }
 
-//        if(phreases_ > 0) {
-//            // Una sau mai mult fraze se afla deja in arbore. Trebuie sa avem grija
-//            // sa nu reintroducem prefixele aflate deja in arbore.
-//            // Se avanseaza sufixul pana se intalneste primul cuvant
-//            // care nu mai este in arbore (este garantat ca se opreste cautarea
-//            // deoarece marcaturul de sfarsit este unic pentru fiecare fraza).
-//            //activePoint_.SetLastIndex(0);
-//            int pos = start;
-//            boolean ok = true;
-//
-//            while((pos < end) && ok) {
-//                Word word = document.WordAt(pos);
-//
-//                if(activePoint_.Origin().HasEdge(word)) {
-//                    // Potriveste cuvintele de pe muchie cu fraza de adaugat.
-//                    Edge edge = activePoint_.Origin().GetEdge(word);
-//                    int span = edge.Span() + 1;
-//                    int edgePos = 0;
-//
-//                    while(edgePos < span) {
-//                        Word a = document.WordAt(pos + edgePos);
-//                        Word b = document.WordAt(edge.FirstIndex() + edgePos);
-//                        edgePos++;
-//
-//                        if(a.equals(b)) {
-//                            activePoint_.SetFirstIndex(activePoint_.FirstIndex() + 1);
-//                            start++;
-//                        }
-//                        else {
-//                            ok = false;
-//                            break;
-//                        }
-//                    }
-//                }
-//                else break;
-//            }
-//        }
-
-        // Adauga fraza primita (se presupune ca include marcatorul de sfarsit).
+        // Add the sentence (it is presumed that it includes the terminator).
         int oldCount = tempDoc.Count();
 
         for(int i = start; i < end; i++) {
@@ -243,13 +206,15 @@ public final class SuffixTree {
         phreases_++;
     }
 
-    // Returneaza o lista cu toate cluster-ele de baza.
+    // Returns a list with all base clusters
+    // having a weight at lest equal to the specified one.
     public List<Cluster> GetBaseClusters(double minWeight) {
         ArrayList<Cluster> clusters =  new ArrayList<Cluster>();
         ArrayList<Edge> edges = new ArrayList<Edge>();
 
-        // Cauta clustere pe toate ramurile care pornesc din radacina.
+        // Search the clusters on all edges originating from the root.
         Iterator<Edge> edgeIt = root_.Edges();
+        
         while(edgeIt.hasNext()) {
             Edge edge = edgeIt.next();
             edges.add(edge);
@@ -267,43 +232,44 @@ public final class SuffixTree {
     public Node Root() { return root_; }
 
     /*
-    * Metode private.
+    * Private methods.
     */
     private void AddWord(int wordIndex, Document document, int maxIndex) {
         Node parent = null;
-        Node lastParent = null; // Folosit pentru a creea link-uri intre noduri.
+        Node lastParent = null; // Used to create links between the nodes.
         Word word = tempDoc.WordAt(wordIndex);
         
-        // Se adauga o muchie (daca este necesar) la toate nodurile intre
-        // cel activ si cel de sfarsit. Nodul activ este primul care nu este
-        // de tip frunza (un nod care este frunza nu-si va mai schimba niciodata
-        // tipul si va fi practic ignorat in pasii ulteriori).
-        // Nodul de sfarsit este primul pentru care nu mai trebuie adaugata
-        // muchia (si nici pentru succesori, deoarece acetia sunt sufixe pentru
-        // nodul de sfarsit si contin deja muchia).
+        // An edge is added (if necessary) for all nodes found
+        // between the active one and the last one. The active node
+        // is the first node which is not a leaf (a leaf node will never
+        // change its type again and will be ignored in the next steps).
+        // The end node is the first node for which an edge must not be added
+        // (and the same for its successors, because they are suffixes for
+        //  the end node and already have the required edges).
         while(true) {
             parent = activePoint_.Origin();
 
-            // Daca nodul este explicit (are deja muchii) verificam daca
-            // trebuie adaugata o muchie avand cuvantul curent.
+            // If the node is explicit (already has edges) check if
+            // an edge labeled with the current word must be added.
             if(activePoint_.IsExplicit()) {
                 if(parent.HasEdge(word)) {
-                    break; // Muchia exista.
+                    break; // The word is already added to an edge.
                 }
             }
             else if(activePoint_.IsImplicit()) {
-                // Muchia trebuie impartita pentru a se putea adauga cuvantul.
+                // The edge must be split before the word can be added.
                 Edge edge = parent.GetEdge(tempDoc.WordAt(activePoint_.firstIndex_));
+                
                 if(tempDoc.WordAt(edge.FirstIndex() + activePoint_.Span() + 1).equals(word)) {
-                    // Cuvantul este deja plasat corespunzator.
+                    // The word is already in the right place.
                     break;
                 }
                 
                 parent = SplitEdge(edge, activePoint_, document);
             }
 
-            // Muchia nu a fost gasita, deci trebuie creata acuma.
-            // Deasemenea, noul nod trebuie legat de ultimul nod vizitat.
+            // The edge could not be found, it must be created now.
+            // At the same time, the new node must be connected to the last visited one.
             Node newNode = new Node();
             Edge newEdge = new Edge(document, wordIndex, maxIndex - 1,
                                     parent, newNode);
@@ -314,44 +280,44 @@ public final class SuffixTree {
             }
             lastParent = parent;
 
-            // Stabileste urmatorul sufix.
+            // Figure out the next suffix.
             if(activePoint_.Origin() == root_) {
-                // Daca punctul activ este chiar radacina se trece
-                // la urmatorul sufix in mod normal.
+                // If the active node is the root of the tree
+                // the next suffix follows the natural order.
                 activePoint_.SetFirstIndex(activePoint_.FirstIndex() + 1);
             }
             else {
-                // Se foloseste un link pentru noduri interioare.
+                // For internal nodes a link is used.
                 activePoint_.SetOrigin(activePoint_.Origin().SuffixNode());
             }
 
-            // Sufixul trebuie ajustat la fiecare schimbare.
+            // The suffix must be adjusted at each update.
             MakeCanonic(activePoint_);
         }
 
-        // Leaga ultimul nod parinte.
+        // Connect the last node to its parent.
         if((lastParent != null) && (lastParent != root_)) {
             lastParent.SetSuffixNode(parent);
         }
 
-        // Punctul de sfarsit devine punct activ pentru pasul urmator.
+        // The end point becomes the active point for the next step.
         activePoint_.SetLastIndex(activePoint_.LastIndex() + 1);
         MakeCanonic(activePoint_);
     }
 
-    // Imparte muchia in doua muchii si creeaza un nod care le leaga.
-    // Se creaza o noua muche care va ramane cu cuvintele de la inceput.
+    // Splits the edge in two and creates a node that connects them.
+    // A new edge which remains with the prefix is created.
     private Node SplitEdge(Edge edge, Suffix suffix, Document document) {
         Node newNode = new Node();
         Edge newEdge = new Edge(document, edge.FirstIndex(),
                                 edge.FirstIndex() + suffix.Span(),
                                 suffix.Origin(), newNode);
 
-        // Inlocuieste vechea muchie cu cea noua.
+        // Replace the old edge with the new one.
         suffix.Origin().AddEdge(tempDoc.WordAt(edge.FirstIndex()), newEdge);
         newNode.SetSuffixNode(suffix.Origin());
 
-        // Ajusteaza vechea muchie (nodul asociat ramane tot frunza).
+        // Adjust the new edge (the associated node remains a leaf).
         edge.SetFirstIndex(edge.FirstIndex() + suffix.Span() + 1);
         edge.SetPreviousNode(newNode);
         newNode.AddEdge(tempDoc.WordAt(edge.FirstIndex()), edge);
@@ -359,10 +325,12 @@ public final class SuffixTree {
         return newNode;
     }
 
-    // Avanseaza in arbore pana se gaseste cel mai apropiat nod
-    // de sfarsitul sufixului.
+    // Advance in the suffix tree until the closest node
+    // to the end of the suffix is found.
     private void MakeCanonic(Suffix suffix) {
-        if(suffix.IsExplicit()) return;
+        if(suffix.IsExplicit()) {
+            return; 
+        }
         
         Word word = tempDoc.WordAt(suffix.FirstIndex());
         Edge edge = suffix.Origin().GetEdge(word);
@@ -372,7 +340,7 @@ public final class SuffixTree {
             suffix.SetOrigin(edge.NextNode());
 
             if(suffix.FirstIndex() <= suffix.LastIndex()) {
-                // Se poate continua.
+                // Search can continue at the next level.
                 word = tempDoc.WordAt(suffix.firstIndex_);
                 edge = suffix.Origin().GetEdge(word);
             }
@@ -398,29 +366,29 @@ public final class SuffixTree {
         assert(node.IsLeaf() == false);
         assert(edges.size() > 0);
         // ------------------------------------------------
-        // Creeaza un nou cluster si seteaza fraza asociata.
+        // Create a new cluster and set the associated sentence.
         Cluster cluster = new Cluster(MakePhrase(edges));
-
         Iterator<Edge> edgeIt = node.Edges();
+        
         while(edgeIt.hasNext()) {
             Edge edge = edgeIt.next();
-            
             Node nextNode = edge.NextNode();
+            
             if(nextNode.IsLeaf()) {
-                // Adauga documentul la cluster.
+                // Add the document to the cluster.
                 if(cluster.Documents().contains(edge.Document()) == false) {
                     cluster.Documents().add(edge.Document());
                 }
             }
             else {
-                // Muchia duce spre un nod intern; toate documentele care
-                // apartin cluster-ului asociat cu nodul intern vor fi adaugate
-                // si la clustet-ul curent.
+                // The edge leads to an internal node.
+                // All documents that belong to the cluster associated
+                // with this internal node must be added to the current cluster.
                 edges.add(edge);
                 Cluster child = GetBaseClustersImpl(nextNode, clusters, edges, minWeight);
                 edges.remove(edges.size() - 1);
-                
                 int count = child.Documents().size();
+                
                 for(int i = 0; i < count; i++) {
                     Document doc = child.Documents().get(i);
 
@@ -431,8 +399,10 @@ public final class SuffixTree {
             }
         }
 
-        // Cluster-ul este ales doar daca importanta sa depaseste pe cea minima.
+        // The cluster is selected only if its weight
+        // is at least equal to the minimum requested weight.
         cluster.ComputeWeight();
+        
         if(cluster.Weight() > minWeight) {
             clusters.add(cluster);
         }

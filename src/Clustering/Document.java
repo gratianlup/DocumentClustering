@@ -30,10 +30,10 @@ import java.util.LinkedHashMap;
 public final class Document {
     private ArrayList<Word> words_;
     private LinkedHashMap<Word, Integer> wordCount_;
-    private int index_; // Numarul documentului in sursa.
+    private int index_; // The index of the document in the source.
 
     /*
-     * Constructori.
+     * Constructors.
      */
     public Document(int index) {
         index_ = index;
@@ -42,13 +42,14 @@ public final class Document {
     }
 
     /*
-     * Metode publice.
+     * Public methods.
      */
     public void AddWord(Word word) {
         assert(word != null);
         // ------------------------------------------------
         words_.add(word);
         Integer count = wordCount_.get(word);
+        
         if(count == null) {
             wordCount_.put(word, 1);
         }
@@ -63,7 +64,8 @@ public final class Document {
         return words_.get(index);
     }
 
-    // Numarul de aparitii ale cuvantului in document.
+    // Returns the number of times the specified word
+    // appears in the document.
     public int WordCount(Word word) {
         assert(word != null);
         // ------------------------------------------------
@@ -77,8 +79,9 @@ public final class Document {
         }
     }
 
-    // Raportul dintre numarul de aparitii ale unui cuvant si
-    // numarul total de cuvinte din document.
+    // Returns the term frequence for the specified word,
+    // which is the division between the number of word appearances
+    // and the total number of words in the document.
     public double TermFrequency(Word word) {
         return (double)WordCount(word) / (double)words_.size();
     }
@@ -103,7 +106,7 @@ public final class Document {
     }
 
     @Override
-    public String toString() { // Pentru debugging.
+    public String toString() {
         return "Words: " + Integer.toString(words_.size());
     }
 }

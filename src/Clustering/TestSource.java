@@ -91,7 +91,7 @@ public final class TestSource implements IDocumentSource {
 
     private void ReadLine() {
         try {
-            // Imparte linia in propozitii (delimitat de '.').
+            // Split the line in sentences delimited by .
             String line = stream_.readLine();
             sentences_ = line.split("[.]");
             sentencePosition_ = 0;

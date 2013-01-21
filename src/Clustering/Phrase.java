@@ -30,20 +30,20 @@ public final class Phrase {
     private List<Word> words_;
 
     /*
-    * Constructori.
+    * Constructors.
     */
     public Phrase() { words_ = new ArrayList<Word>(); }
 
     /*
-    * Metode publice.
+    * Public methods.
     */
     public List<Word> Words() { return words_; }
     public int WordCount() { return words_.size(); }
 
     public double Weight() {
         double sum = 0;
-
         int count = words_.size();
+        
         for(int i = 0; i < count; i++) {
             sum += words_.get(i).Weight();
         }
