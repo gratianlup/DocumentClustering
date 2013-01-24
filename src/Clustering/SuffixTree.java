@@ -371,7 +371,7 @@ public final class SuffixTree {
 
     private Cluster GetBaseClustersImpl(Node node, List<Cluster> clusters,
                                         List<Edge> edges, double minWeight) {
-        assert(node.IsLeaf() == false);
+        assert(!node.IsLeaf());
         assert(edges.size() > 0);
         // ------------------------------------------------
         // Create a new cluster and set the associated sentence.
