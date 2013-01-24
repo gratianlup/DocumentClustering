@@ -227,7 +227,7 @@ public final class SuffixTree {
             Edge edge = edgeIt.next();
             edges.add(edge);
             
-            if(edge.NextNode().IsLeaf() == false) {
+            if(!edge.NextNode().IsLeaf()) {
                 GetBaseClustersImpl(edge.NextNode(), clusters, edges, minWeight);
             }
 
@@ -384,7 +384,7 @@ public final class SuffixTree {
             
             if(nextNode.IsLeaf()) {
                 // Add the document to the cluster.
-                if(cluster.Documents().contains(edge.Document()) == false) {
+                if(!cluster.Documents().contains(edge.Document())) {
                     cluster.Documents().add(edge.Document());
                 }
             }
@@ -400,7 +400,7 @@ public final class SuffixTree {
                 for(int i = 0; i < count; i++) {
                     Document doc = child.Documents().get(i);
 
-                    if(cluster.Documents().contains(doc) == false) {
+                    if(!cluster.Documents().contains(doc)) {
                         cluster.Documents().add(doc);
                     }
                 }
