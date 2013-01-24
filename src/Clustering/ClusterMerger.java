@@ -156,7 +156,7 @@ public class ClusterMerger {
             for(int i = 0; i < info.Edges().size(); i++) {
                 ClusterInfo next = info.Edges().get(i);
                 
-                if(next.Discovered() == false) {
+                if(!next.Discovered()) {
                     next.SetDiscovered(true);
                     queue.add(next);
                 }
