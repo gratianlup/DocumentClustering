@@ -110,7 +110,7 @@ public final class DocumentReader {
             
             if(word != null) {
                 // The word has been found before (possible in other documents too).
-                if(doc.ContainsWord(word) == false) {
+                if(!doc.ContainsWord(word)) {
                     // This is the first time the word has been found
                     // in the current docuemtn, add an entry for it.
                     int newCount = wordDf_.get(word) + 1;
