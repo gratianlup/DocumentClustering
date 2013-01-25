@@ -329,7 +329,6 @@ public final class SuffixTree {
         edge.SetFirstIndex(edge.FirstIndex() + suffix.Span() + 1);
         edge.SetPreviousNode(newNode);
         newNode.AddEdge(tempDoc.WordAt(edge.FirstIndex()), edge);
-
         return newNode;
     }
 
