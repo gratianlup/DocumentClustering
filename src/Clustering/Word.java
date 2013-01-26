@@ -35,6 +35,7 @@ package Clustering;
 public final class Word {
     private String word_;
     private double weight_;
+    
     /*
      * Constructors.
      */
