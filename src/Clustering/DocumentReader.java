@@ -1,4 +1,4 @@
-// Copyright (c) Gratian Lup. All rights reserved.
+// Copyright (c) 2010 Gratian Lup. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -150,7 +150,7 @@ public final class DocumentReader {
             sum += documents_.get(i).TermFrequency(word);
         }
 
-        // It is guaranteed that the words appears at least once.
+        // It is guaranteed that the word appears at least once.
         return sum / (double)wordDf_.get(word);
     }
 
