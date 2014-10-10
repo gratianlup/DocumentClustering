@@ -39,7 +39,7 @@ import java.util.List;
 
 public final class DocumentReader {
     // Each sentence must end in an unique word
-    // to be inserted properliy in the suffix tree.
+    // to be inserted properly in the suffix tree.
     // For example, $0, $1, ... $100, ...
     private static final String END_MARKER = "#";
 
@@ -112,14 +112,14 @@ public final class DocumentReader {
                 // The word has been found before (possible in other documents too).
                 if(!doc.ContainsWord(word)) {
                     // This is the first time the word has been found
-                    // in the current docuemtn, add an entry for it.
+                    // in the current document, add an entry for it.
                     int newCount = wordDf_.get(word) + 1;
                     wordDf_.put(word, newCount);
                 }
             }
             else {
                 // The first time when the word is found
-                // in any docuemtn, add an entry for it.
+                // in any document, add an entry for it.
                 word = new Word(wordStr);
                 words_.put(wordStr, word);
                 wordDf_.put(word, 1);
