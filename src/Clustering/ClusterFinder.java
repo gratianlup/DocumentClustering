@@ -31,72 +31,79 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package Clustering;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public final class ClusterFinder {
-	
+
 	private static DocumentReader reader;
-	
-    // Function used for unit tests.
-    public static SuffixTree.Node ParseSource(IDocumentSource source) {
-        DocumentReader reader = new DocumentReader(source);
-        reader.Read();
-        return reader.Tree().Root();
-    }
 
-    /**
-     * Returns a list with all clusters from the document 
-     * that meet conditions specified in the parameters.
-     *
-     * @param source The source from where to read the documents.
-     * @param clusterOverlapDegree The minimum overlapping degree
-     * for two clusters to be combined into a single one.
-     * @param maxClusters The maximum number of clusters to add to the
-     * result lists. The rest of the documents are added to a cluster named "Other".
-     * @param minClusterWeight The minimum weight of a cluster to be considered.
-     * @return A list with all clusters meeting the specified conditions.
-     */
-    public static List<Cluster> Find(IDocumentSource source,
-                                     double clusterOverlapDegree,
-                                     int maxClusters, double minClusterWeight) {
-        assert(source != null);
-        assert(maxClusters > 0);
-        // ------------------------------------------------
-        // Read all documents and get the base clusters.
-        // The weight of each one is computed and is used to sort them
-        // in ascending order. Clusters with low weight are grupped
-        // under a single cluster named "Other", but only if they remain
-        // after 'maxClusters' have been considered.
-        reader = new DocumentReader(source);
-        reader.Read();
+	// Function used for unit tests.
+	public static SuffixTree.Node ParseSource(IDocumentSource source) {
+		DocumentReader reader = new DocumentReader(source);
+		reader.Read();
+		return reader.Tree().Root();
+	}
 
-        List<Cluster> baseClusters = reader.GetBaseClusters(minClusterWeight);
+	/**
+	 * Returns a list with all clusters from the document that meet conditions
+	 * specified in the parameters.
+	 *
+	 * @param source
+	 *            The source from where to read the documents.
+	 * @param clusterOverlapDegree
+	 *            The minimum overlapping degree for two clusters to be combined
+	 *            into a single one.
+	 * @param maxClusters
+	 *            The maximum number of clusters to add to the result lists. The
+	 *            rest of the documents are added to a cluster named "Other".
+	 * @param minClusterWeight
+	 *            The minimum weight of a cluster to be considered.
+	 * @return A list with all clusters meeting the specified conditions.
+	 */
+	public static List<Cluster> Find(IDocumentSource source, double clusterOverlapDegree, int maxClusters,
+			double minClusterWeight) {
+		assert(source != null);
+		assert(maxClusters > 0);
+		// ------------------------------------------------
+		// Read all documents and get the base clusters.
+		// The weight of each one is computed and is used to sort them
+		// in ascending order. The first maxClusters clusters are created by
+		// merging base clusters. Any base clusters that haven't been merged
+		// into
+		// a cluster are merged into their own final cluster labelled 'Other'.
+		reader = new DocumentReader(source);
+		reader.Read();
 
-        if(baseClusters.isEmpty()) {
-            return new ArrayList<Cluster>();
-        }
+		List<Cluster> baseClusters = reader.GetBaseClusters(minClusterWeight);
 
-        // Select the first 'maxClusters' clusters.
-        Collections.sort(baseClusters);
-        int limit = Math.min(maxClusters, baseClusters.size());
+		if (baseClusters.isEmpty()) {
+			System.out.println("No base clusters were found, this indicates an error in the program.");
+			return new ArrayList<Cluster>();
+		}
 
-        List<Cluster> toMerge = baseClusters.subList(0, limit);
-        ClusterMerger merger = new ClusterMerger(toMerge, clusterOverlapDegree);
-        List<Cluster> finalClusters = merger.MergeClusters();
+		// Select the first 'maxClusters' base clusters.
+		Collections.sort(baseClusters);
+		int limit = Math.min(maxClusters, baseClusters.size());
 
-        if(limit < baseClusters.size()) {
-            // Some clusters remained, group them under a single cluster.
-            Cluster other = Cluster.Merge(baseClusters.subList(limit, baseClusters.size()));
-            other.SetLabel("Other");
-            finalClusters.add(other);
-        }
+		List<Cluster> toMerge = baseClusters.subList(0, limit);
+		ClusterMerger merger = new IClusterMerger(toMerge, clusterOverlapDegree);
+		
+		List<Cluster> finalClusters = merger.MergeClusters();
 
-        return finalClusters;
-    }
-    
-    public static DocumentReader getReader() {
-    	return reader;
-    }
+		if (limit < baseClusters.size()) {
+			// Some base clusters remained, group them under a single cluster.
+			Cluster other = Cluster.Merge(baseClusters.subList(limit, baseClusters.size()));
+			other.SetLabel("Other");
+			finalClusters.add(other);
+		}
+
+		return finalClusters;
+	}
+
+	public static DocumentReader getReader() {
+		return reader;
+	}
 }

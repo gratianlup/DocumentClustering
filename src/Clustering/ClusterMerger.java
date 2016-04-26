@@ -31,136 +31,86 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package Clustering;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-public class ClusterMerger {
-    private class ClusterInfo {
-        private Cluster cluster_;
-        private boolean discovered_;
-        private ArrayList<ClusterInfo> edges_;
+public class IClusterMerger extends AbstractOverlappingClusterMerger {
 
-        public ClusterInfo(Cluster cluster) {
-            cluster_ = cluster;
-            edges_ = new ArrayList<ClusterInfo>();
-        }
+	public IClusterMerger(List<Cluster> clusters, double overlapDegree) {
+		clusters_ = new ArrayList<ClusterInfo>();
+		overlapDegree_ = overlapDegree;
+		int count = clusters.size();
 
-        public Cluster Cluster() { return cluster_; }
-        public boolean Discovered() { return discovered_; }
-        public void SetDiscovered(boolean value) { discovered_ = value; }
-        public List<ClusterInfo> Edges() { return edges_; }
-    }
+		for (int i = 0; i < count; i++) {
+			clusters_.add(new ClusterInfo(clusters.get(i)));
+		}
+	}
 
-    /*
-    * Private members.
-    */
-    private ArrayList<ClusterInfo> clusters_;
-    private double overlapDegree_;
+	public List<Cluster> MergeClusters() {
+		ConnectClusters();
 
-    /*
-    * Constructors.
-    */
-    public ClusterMerger(List<Cluster> clusters, double overlapDegree) {
-        clusters_ = new ArrayList<ClusterInfo>();
-        overlapDegree_ = overlapDegree;
-        int count = clusters.size();
-        
-        for(int i = 0; i < count; i++) {
-            clusters_.add(new ClusterInfo(clusters.get(i)));
-        }
-    }
+		// Each group of similar clusters is found in the same connected
+		// component.
+		// Find the connext components using a breadth-first search.
+		int count = clusters_.size();
+		Queue<ClusterInfo> queue = new LinkedList<ClusterInfo>();
+		ArrayList<ArrayList<Cluster>> components = new ArrayList<ArrayList<Cluster>>();
 
-    /*
-    * Public methods.
-    */
-    // Finds clusters containing the same documents.
-    public List<Cluster> MergeClusters() {
-        ConnectClusters();
+		for (int i = 0; i < count; i++) {
+			ClusterInfo cluster = clusters_.get(i);
 
-        // Each group of similar clusters is found in the same connected component.
-        // Find the connext components using a breadth-first search.
-        int count = clusters_.size();
-        Queue<ClusterInfo> queue = new LinkedList<ClusterInfo>();
-        ArrayList<ArrayList<Cluster>> components =
-                new ArrayList<ArrayList<Cluster>>();
-        
-        for(int i = 0; i < count; i++) {
-            ClusterInfo cluster = clusters_.get(i);
-            
-            if(cluster.Discovered()) {
-                // The cluster has already been discovered
-                // and is part of a connected component.
-                continue;
-            }
+			if (cluster.Discovered()) {
+				// The cluster has already been discovered
+				// and is part of a connected component.
+				continue;
+			}
 
-            // Start a new connect component.
-            ArrayList<Cluster> component = new ArrayList<Cluster>();
-            components.add(component);
+			// Start a new connect component.
+			ArrayList<Cluster> component = new ArrayList<Cluster>();
+			components.add(component);
 
-            queue.clear();
-            queue.add(cluster);
-            cluster.SetDiscovered(true);
-            FindComponent(queue, component);
-        }
+			queue.clear();
+			queue.add(cluster);
+			cluster.SetDiscovered(true);
+			FindComponent(queue, component);
+		}
 
-        // Unify the clusters from each connected component
-        // into a single one and add them to the resulting list.
-        ArrayList<Cluster> clusters = new ArrayList<Cluster>(components.size());
+		// Unify the clusters from each connected component
+		// into a single one and add them to the resulting list.
+		ArrayList<Cluster> clusters = new ArrayList<Cluster>(components.size());
 
-        for(int i = 0; i < components.size(); i++) {
-            ArrayList<Cluster> component = components.get(i);
-            clusters.add(Cluster.Merge(component));
-        }
+		for (int i = 0; i < components.size(); i++) {
+			ArrayList<Cluster> component = components.get(i);
+			clusters.add(Cluster.Merge(component));
+		}
 
-        return clusters;
-    }
+		return clusters;
+	}
 
-    /*
-    * Private methods.
-    */
-    // Connects the clusters with (approximately) the same documents.
-    private void ConnectClusters() {
-        // Compare all pairs of clusters and add an edge
-        // between the ones that are similar.
-        int count = clusters_.size();
-        
-        for(int i = 0; i < count; i++) {
-            for(int j = 0; j < count; j++) {
-                if(i == j) {
-                    // Don't compare a document with itself.
-                    continue;
-                }
+	/*
+	 * Private methods.
+	 */
+	// Connects the clusters with (approximately) the same documents.
 
-                ClusterInfo a = clusters_.get(i);
-                ClusterInfo b = clusters_.get(j);
-                
-                if(a.Cluster().IsSimilarTo(b.Cluster(), overlapDegree_)) {
-                    // The documents are similar enough, connect them.
-                    a.Edges().add(b);
-                }
-            }
-        }
-    }
-    
-    // Finds a connected componend. It is presumed that the start node
-    // is already found in the specified queue.
-    private void FindComponent(Queue<ClusterInfo> queue,
-                               ArrayList<Cluster> component) {
-        while(queue.size() > 0) {
-            ClusterInfo info = queue.poll();
-            component.add(info.Cluster());
+	// Finds a connected component. It is presumed that the start node
+	// is already found in the specified queue.
+	private void FindComponent(Queue<ClusterInfo> queue, ArrayList<Cluster> component) {
+		while (queue.size() > 0) {
+			ClusterInfo info = queue.poll();
+			component.add(info.Cluster());
 
-            // Add all neighbor nodes to the component.
-            for(int i = 0; i < info.Edges().size(); i++) {
-                ClusterInfo next = info.Edges().get(i);
-                
-                if(!next.Discovered()) {
-                    next.SetDiscovered(true);
-                    queue.add(next);
-                }
-            }
-        }
-    }
+			// Add all neighbor nodes to the component.
+			for (int i = 0; i < info.Edges().size(); i++) {
+				ClusterInfo next = info.Edges().get(i);
+
+				if (!next.Discovered()) {
+					next.SetDiscovered(true);
+					queue.add(next);
+				}
+			}
+		}
+	}
 }
