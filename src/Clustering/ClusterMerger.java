@@ -37,9 +37,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-public class IClusterMerger extends AbstractOverlappingClusterMerger {
+public class ClusterMerger extends AbstractOverlappingClusterMerger {
 
-	public IClusterMerger(double overlapDegree_) {
+	public ClusterMerger(double overlapDegree_) {
 		this.minOverlapDegree = overlapDegree_;
 	}
 
