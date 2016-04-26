@@ -2,6 +2,13 @@ package Clustering;
 
 import java.util.List;
 
+/**
+ * Merges base clusters to produce final clusters using MST clustering. Not an
+ * example of a great clustering algorithm, but a twist on the standard STC merging
+ * algorithm of binary similarity.
+ * 
+ * @author harryross - harryross263@gmail.com.
+ */
 public class MSTMerger extends AbstractOverlappingClusterMerger {
 
 	private final int numberOfClustersToFind;

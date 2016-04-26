@@ -56,6 +56,7 @@ public class ReutersSource implements IDocumentSource {
 				// queue of sentences.
 				sentences.offer(sentence);
 			});
+			
 			return true;
 		} catch (IOException e) {
 			System.out.println(e);

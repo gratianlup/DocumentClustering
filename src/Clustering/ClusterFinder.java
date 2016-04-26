@@ -64,7 +64,7 @@ public final class ClusterFinder {
 	 * @return A list with all clusters meeting the specified conditions.
 	 */
 	public static List<Cluster> Find(IDocumentSource source, int maxClusters,
-			double minClusterWeight, ClusterMerger merger) {
+			double minClusterWeight, IClusterMerger merger) {
 		assert(source != null);
 		assert(maxClusters > 0);
 		// ------------------------------------------------
