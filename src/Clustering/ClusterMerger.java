@@ -40,35 +40,20 @@ import java.util.Queue;
 public class IClusterMerger extends AbstractOverlappingClusterMerger {
 
 	public IClusterMerger(double overlapDegree_) {
-		this.overlapDegree_ = overlapDegree_;
-	}
-	
-	/**
-	 * Returns a list of {@link ClusterInfo} objects describing the list of
-	 * base clusters passed to it.
-	 * @param baseClusters - clusters for which to generate info.
-	 * @return
-	 */
-	public List<ClusterInfo> generateClusterInfo(List<Cluster> baseClusters) {
-		List<ClusterInfo> clusterInfos = new ArrayList<ClusterInfo>();
-		for (Cluster bc : baseClusters) {
-			clusterInfos.add(new ClusterInfo(bc));
-		}
-		
-		return clusterInfos;
+		this.minOverlapDegree = overlapDegree_;
 	}
 
 	public List<Cluster> MergeClusters(List<Cluster> baseClustersToMerge) {
 		// Build a graph of similar base clusters.
-		List<ClusterInfo> clusterInfos = generateClusterInfo(baseClustersToMerge);
-		ConnectClusters(clusterInfos);
+		List<ClusterInfo> baseClusterInfos = generateClusterInfo(baseClustersToMerge);
+		ConnectClusters(baseClusterInfos);
 
 		// Find the connected components within the graph produced above.
 		Queue<ClusterInfo> queue = new LinkedList<ClusterInfo>();
 		ArrayList<ArrayList<Cluster>> components = new ArrayList<ArrayList<Cluster>>();
 
-		for (int i = 0; i < clusterInfos.size(); i++) {
-			ClusterInfo ci = clusterInfos.get(i);
+		for (int i = 0; i < baseClusterInfos.size(); i++) {
+			ClusterInfo ci = baseClusterInfos.get(i);
 
 			if (ci.Discovered()) {
 				// The cluster has already been discovered
@@ -107,7 +92,7 @@ public class IClusterMerger extends AbstractOverlappingClusterMerger {
 
 			// Add all neighbor nodes to the component.
 			for (int i = 0; i < info.Edges().size(); i++) {
-				ClusterInfo next = info.Edges().get(i);
+				ClusterInfo next = info.Edges().get(i).getOther();
 
 				if (!next.Discovered()) {
 					next.SetDiscovered(true);

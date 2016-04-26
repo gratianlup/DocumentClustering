@@ -63,7 +63,7 @@ public final class ClusterFinder {
 	 *            The minimum weight of a cluster to be considered.
 	 * @return A list with all clusters meeting the specified conditions.
 	 */
-	public static List<Cluster> Find(IDocumentSource source, double clusterOverlapDegree, int maxClusters,
+	public static List<Cluster> Find(IDocumentSource source, int maxClusters,
 			double minClusterWeight, ClusterMerger merger) {
 		assert(source != null);
 		assert(maxClusters > 0);
@@ -89,10 +89,6 @@ public final class ClusterFinder {
 		int limit = Math.min(maxClusters, baseClusters.size());
 
 		List<Cluster> clustersToMerge = baseClusters.subList(0, limit);
-		
-		if (merger instanceof AbstractOverlappingClusterMerger) {
-			((AbstractOverlappingClusterMerger) merger).setOverlapDegree(clusterOverlapDegree);
-		}
 		
 		List<Cluster> finalClusters = merger.MergeClusters(clustersToMerge);
 

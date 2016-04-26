@@ -116,6 +116,36 @@ public final class Cluster implements Comparable<Cluster> {
 				&& ((double) common / (double) other.documents_.size()) > overlapDegree;
 	}
 
+	/*
+	 * Returns the 'distance' between this cluster and another. The distance can
+	 * be thought of as the average similarity of the documents in the two clusters.
+	 * i.e. a measure of how overlapping the clusters are. If the two clusters are exactly
+	 * identical then the similarity would be 1. If there is no overlap then the distance would be 0.
+	 */
+	public double similarity(Cluster other) {	
+		Hashtable<Document, Document> hash = new Hashtable<Document, Document>();
+
+		for (int i = 0; i < documents_.size(); i++) {
+			Document doc = documents_.get(i);
+			hash.put(doc, doc);
+		}
+
+		// Check which of the documents from the other clusters
+		// are found in the hash table.
+		double common = 0;
+		for (int i = 0; i < other.documents_.size(); i++) {
+			if (hash.containsKey(other.documents_.get(i))) {
+				common++;
+			}
+		}
+		
+		double dist_forward = common / (double) documents_.size();
+		double dist_backward = common / (double) other.documents_.size();
+		
+		// Return the average distance between these two clusters.
+		return (dist_forward + dist_backward) / 2.0 ;
+	}
+
 	// Unifies all clusters from the specified list
 	// into a single cluster containing the union of the documents.
 	public static Cluster Merge(List<Cluster> clusters) {
