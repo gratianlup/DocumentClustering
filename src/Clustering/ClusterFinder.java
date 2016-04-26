@@ -36,6 +36,9 @@ import java.util.Collections;
 import java.util.List;
 
 public final class ClusterFinder {
+	
+	private static DocumentReader reader;
+	
     // Function used for unit tests.
     public static SuffixTree.Node ParseSource(IDocumentSource source) {
         DocumentReader reader = new DocumentReader(source);
@@ -66,7 +69,7 @@ public final class ClusterFinder {
         // in ascending order. Clusters with low weight are grupped
         // under a single cluster named "Other", but only if they remain
         // after 'maxClusters' have been considered.
-        DocumentReader reader = new DocumentReader(source);
+        reader = new DocumentReader(source);
         reader.Read();
 
         List<Cluster> baseClusters = reader.GetBaseClusters(minClusterWeight);
@@ -91,5 +94,9 @@ public final class ClusterFinder {
         }
 
         return finalClusters;
+    }
+    
+    public static DocumentReader getReader() {
+    	return reader;
     }
 }

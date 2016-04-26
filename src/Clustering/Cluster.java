@@ -204,4 +204,15 @@ public final class Cluster implements Comparable {
             return 0;
         }
     }
+    
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("Cluster: ");
+    	sb.append(label_);
+    	sb.append("; Weight: ");
+    	sb.append(weight_);
+    	sb.append("; Number docs: ");
+    	sb.append(documents_.size());
+    	return sb.toString();
+    }
 }

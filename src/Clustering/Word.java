@@ -33,41 +33,55 @@
 package Clustering;
 
 public final class Word {
-    private String word_;
-    private double weight_;
-    
-    /*
-     * Constructors.
-     */
-    public Word(String word) {
-        word_ = word;
-    }
+	private String word_;
+	private double weight_;
 
-    /*
-     * Public methods.
-     */
-    public String Word() { return word_; }
-    public void SetWord(String value) { word_ = value; }
+	/*
+	 * Constructors.
+	 */
+	public Word(String word) {
+		word_ = word;
+	}
 
-    public double Weight() { return weight_; }
-    public void SetWeight(double value) { weight_ = value; }
+	/*
+	 * Public methods.
+	 */
+	public String Word() {
+		return word_;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) { return false; }
-        if (getClass() != obj.getClass()) { return false; }
+	public void SetWord(String value) {
+		word_ = value;
+	}
 
-        Word other = (Word)obj;
-        return other.word_.equals(word_);
-    }
+	public double Weight() {
+		return weight_;
+	}
 
-    @Override
-    public int hashCode() {
-        return word_.hashCode();
-    }
+	public void SetWeight(double value) {
+		weight_ = value;
+	}
 
-    @Override
-    public String toString() {
-        return word_ + ", W=" + Double.toString(weight_);
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+
+		Word other = (Word) obj;
+		return other.word_.equals(word_);
+	}
+
+	@Override
+	public int hashCode() {
+		return word_.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return word_ + ", W=" + Double.toString(weight_);
+	}
 }
