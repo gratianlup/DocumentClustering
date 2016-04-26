@@ -64,7 +64,7 @@ public final class ClusterFinder {
 	 * @return A list with all clusters meeting the specified conditions.
 	 */
 	public static List<Cluster> Find(IDocumentSource source, double clusterOverlapDegree, int maxClusters,
-			double minClusterWeight) {
+			double minClusterWeight, ClusterMerger merger) {
 		assert(source != null);
 		assert(maxClusters > 0);
 		// ------------------------------------------------
@@ -72,8 +72,8 @@ public final class ClusterFinder {
 		// The weight of each one is computed and is used to sort them
 		// in ascending order. The first maxClusters clusters are created by
 		// merging base clusters. Any base clusters that haven't been merged
-		// into
-		// a cluster are merged into their own final cluster labelled 'Other'.
+		// into a cluster are merged into an aggregate final cluster labeled
+		// 'Other'.
 		reader = new DocumentReader(source);
 		reader.Read();
 
@@ -88,10 +88,13 @@ public final class ClusterFinder {
 		Collections.sort(baseClusters);
 		int limit = Math.min(maxClusters, baseClusters.size());
 
-		List<Cluster> toMerge = baseClusters.subList(0, limit);
-		ClusterMerger merger = new IClusterMerger(toMerge, clusterOverlapDegree);
+		List<Cluster> clustersToMerge = baseClusters.subList(0, limit);
 		
-		List<Cluster> finalClusters = merger.MergeClusters();
+		if (merger instanceof AbstractOverlappingClusterMerger) {
+			((AbstractOverlappingClusterMerger) merger).setOverlapDegree(clusterOverlapDegree);
+		}
+		
+		List<Cluster> finalClusters = merger.MergeClusters(clustersToMerge);
 
 		if (limit < baseClusters.size()) {
 			// Some base clusters remained, group them under a single cluster.

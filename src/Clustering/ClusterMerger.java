@@ -39,30 +39,38 @@ import java.util.Queue;
 
 public class IClusterMerger extends AbstractOverlappingClusterMerger {
 
-	public IClusterMerger(List<Cluster> clusters, double overlapDegree) {
-		clusters_ = new ArrayList<ClusterInfo>();
-		overlapDegree_ = overlapDegree;
-		int count = clusters.size();
-
-		for (int i = 0; i < count; i++) {
-			clusters_.add(new ClusterInfo(clusters.get(i)));
+	public IClusterMerger(double overlapDegree_) {
+		this.overlapDegree_ = overlapDegree_;
+	}
+	
+	/**
+	 * Returns a list of {@link ClusterInfo} objects describing the list of
+	 * base clusters passed to it.
+	 * @param baseClusters - clusters for which to generate info.
+	 * @return
+	 */
+	public List<ClusterInfo> generateClusterInfo(List<Cluster> baseClusters) {
+		List<ClusterInfo> clusterInfos = new ArrayList<ClusterInfo>();
+		for (Cluster bc : baseClusters) {
+			clusterInfos.add(new ClusterInfo(bc));
 		}
+		
+		return clusterInfos;
 	}
 
-	public List<Cluster> MergeClusters() {
-		ConnectClusters();
+	public List<Cluster> MergeClusters(List<Cluster> baseClustersToMerge) {
+		// Build a graph of similar base clusters.
+		List<ClusterInfo> clusterInfos = generateClusterInfo(baseClustersToMerge);
+		ConnectClusters(clusterInfos);
 
-		// Each group of similar clusters is found in the same connected
-		// component.
-		// Find the connext components using a breadth-first search.
-		int count = clusters_.size();
+		// Find the connected components within the graph produced above.
 		Queue<ClusterInfo> queue = new LinkedList<ClusterInfo>();
 		ArrayList<ArrayList<Cluster>> components = new ArrayList<ArrayList<Cluster>>();
 
-		for (int i = 0; i < count; i++) {
-			ClusterInfo cluster = clusters_.get(i);
+		for (int i = 0; i < clusterInfos.size(); i++) {
+			ClusterInfo ci = clusterInfos.get(i);
 
-			if (cluster.Discovered()) {
+			if (ci.Discovered()) {
 				// The cluster has already been discovered
 				// and is part of a connected component.
 				continue;
@@ -73,8 +81,8 @@ public class IClusterMerger extends AbstractOverlappingClusterMerger {
 			components.add(component);
 
 			queue.clear();
-			queue.add(cluster);
-			cluster.SetDiscovered(true);
+			queue.add(ci);
+			ci.SetDiscovered(true);
 			FindComponent(queue, component);
 		}
 
@@ -89,11 +97,6 @@ public class IClusterMerger extends AbstractOverlappingClusterMerger {
 
 		return clusters;
 	}
-
-	/*
-	 * Private methods.
-	 */
-	// Connects the clusters with (approximately) the same documents.
 
 	// Finds a connected component. It is presumed that the start node
 	// is already found in the specified queue.
