@@ -31,21 +31,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package Clustering;
-import java.util.*;
+import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.image.*;
-import java.awt.event.*;
-import java.awt.Color;
-import javax.swing.*;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.text.DecimalFormat;
-
-import java.awt.Color;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
+import java.util.Iterator;
+
+import javax.swing.JPanel;
 
 public class ClusterViewer extends JPanel {
     class NodeInfo {

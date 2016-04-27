@@ -36,17 +36,11 @@ public final class Word {
 	private String word_;
 	private double weight_;
 
-	/*
-	 * Constructors.
-	 */
 	public Word(String word) {
 		word_ = word;
 	}
-
-	/*
-	 * Public methods.
-	 */
-	public String Word() {
+	
+	public String GetWord() {
 		return word_;
 	}
 

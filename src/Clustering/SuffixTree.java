@@ -128,7 +128,7 @@ public final class SuffixTree {
         public String toString() {
             String temp = "";
             for(int i = firstIndex_; i <= lastIndex_; i++) {
-                temp += tempDoc.WordAt(i).Word() + " ";
+                temp += tempDoc.WordAt(i).GetWord() + " ";
             }
 
             return temp;
