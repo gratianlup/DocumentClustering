@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -140,13 +141,15 @@ public class ClusterGraph {
 		
 		// Grab the numEdgesToRemove largest edges from the sorted list of unique edges.
 		int numUniqueEdges = uniqueEdges.size();
-		List<GraphEdge> edgesToRemove = uniqueEdges.subList(numUniqueEdges - numEdgesToRemove, numEdgesToRemove);
+		List<GraphEdge> edgesToRemove = uniqueEdges.subList(numUniqueEdges - numEdgesToRemove, numUniqueEdges);
 		
 		// Remove the appropriate edges from any entry in cg's adjacency map.
-		for (Set<GraphEdge> edges : cg.edges().values()) {
-			for (GraphEdge edge : edges) {
+		for(Set<GraphEdge> edges : cg.edges().values()) {
+			// Must use an iterator here since we will be modifying the data structure.
+			for (Iterator<GraphEdge> j = edges.iterator(); j.hasNext();) {
+				GraphEdge edge = j.next();
 				if (edgesToRemove.contains(edge)) {
-					edges.remove(edge);
+					j.remove();
 				}
 			}
 		} 

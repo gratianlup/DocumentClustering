@@ -36,7 +36,7 @@ public class SuffixTreeClustering {
 		documentSource = new ReutersSource(files);
 
 		//List<Cluster> clusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MinDegreeClusterMerger(0.1));
-		Set<Cluster> clusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MSTMerger(2));
+		Set<Cluster> clusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MSTMerger(1));
 
 		System.out.println("Number of clusters found: " + clusters.size());
 
