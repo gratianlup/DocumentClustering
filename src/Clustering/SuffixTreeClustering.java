@@ -6,14 +6,13 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * Kicks off the Suffix Tree (ST) clustering system and launches a GUI to view
- * the clusters formed.
+ * Driver code for the Suffix Tree (ST) clustering system.
  * 
  * @author harryross - harryross263@gmail.com.
  */
 public class SuffixTreeClustering {
 
-	/* The source from which to read the documents */
+	/* The source from which to read the documents. */
 	private static IDocumentSource documentSource;
 
 	/**

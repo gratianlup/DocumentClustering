@@ -14,9 +14,20 @@ import java.util.Set;
 
 import Clustering.AbstractOverlappingClusterMerger.GraphVertex;
 
+/**
+ * Represents a graph of {@link Cluster} objects. Useful functions include
+ * {@link #getUniqueEdges()} to deduplicate incoming/outgoing edges as well as
+ * {@link #getConnectedComponents()} and {@link #buildMST(ClusterGraph)}.
+ * 
+ * @author harryross -- harryross263@gmail.com.
+ * 
+ */
 public class ClusterGraph {
 
 	private Set<GraphVertex> vertices;
+
+	/* Adjacency map of vertices to the edges coming in or out of them. 
+	 * Edges are undirected. */
 	private Map<GraphVertex, Set<GraphEdge>> edges;
 
 	public ClusterGraph(Set<GraphVertex> vertices, Map<GraphVertex, Set<GraphEdge>> edges) {
@@ -135,6 +146,8 @@ public class ClusterGraph {
 	 * @return
 	 */
 	public static ClusterGraph removeLargestEdges(ClusterGraph cg, int numEdgesToRemove) {
+		// We use a list here so that we can sort the edges by weight and index
+		// the heaviest/lightest etc.
 		List<GraphEdge> uniqueEdges = new ArrayList<>();
 		uniqueEdges.addAll(cg.getUniqueEdges());
 		Collections.sort(uniqueEdges);
