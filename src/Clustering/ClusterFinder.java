@@ -34,7 +34,9 @@ package Clustering;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class ClusterFinder {
 
@@ -63,7 +65,7 @@ public final class ClusterFinder {
 	 *            The minimum weight of a cluster to be considered.
 	 * @return A list with all clusters meeting the specified conditions.
 	 */
-	public static List<Cluster> Find(IDocumentSource source, int maxClusters,
+	public static Set<Cluster> Find(IDocumentSource source, int maxClusters,
 			double minClusterWeight, IClusterMerger merger) {
 		assert(source != null);
 		assert(maxClusters > 0);
@@ -77,24 +79,26 @@ public final class ClusterFinder {
 		reader = new DocumentReader(source);
 		reader.Read();
 
-		List<Cluster> baseClusters = reader.GetBaseClusters(minClusterWeight);
+		Set<Cluster> baseClusterSet = reader.GetBaseClusters(minClusterWeight);
 
-		if (baseClusters.isEmpty()) {
+		if (baseClusterSet.isEmpty()) {
 			System.out.println("No base clusters were found, this indicates an error in the program.");
-			return new ArrayList<Cluster>();
+			return new HashSet<Cluster>();
 		}
 
 		// Select the first 'maxClusters' base clusters.
-		Collections.sort(baseClusters);
-		int limit = Math.min(maxClusters, baseClusters.size());
+		List<Cluster> baseClusterList = new ArrayList<>();
+		baseClusterList.addAll(baseClusterSet);
+		Collections.sort(baseClusterList);
+		int limit = Math.min(maxClusters, baseClusterList.size());
 
-		List<Cluster> clustersToMerge = baseClusters.subList(0, limit);
-		
-		List<Cluster> finalClusters = merger.MergeClusters(clustersToMerge);
+		baseClusterSet.clear();
+		baseClusterSet.addAll(baseClusterList.subList(0, limit));		
+		Set<Cluster> finalClusters = merger.MergeClusters(baseClusterSet);
 
-		if (limit < baseClusters.size()) {
+		if (limit < baseClusterSet.size()) {
 			// Some base clusters remained, group them under a single cluster.
-			Cluster other = Cluster.Merge(baseClusters.subList(limit, baseClusters.size()));
+			Cluster other = Cluster.Merge(baseClusterList.subList(limit, baseClusterList.size()));
 			other.SetLabel("Other");
 			finalClusters.add(other);
 		}

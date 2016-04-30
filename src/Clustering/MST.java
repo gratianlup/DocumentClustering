@@ -1,7 +1,6 @@
 package Clustering;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -15,23 +14,27 @@ public class MST {
 	private double weight;
 	
 	/* The edges in the MST. */
-	private List<GraphEdge<GraphVertex>> mst = new ArrayList<>();
+	private List<GraphEdge> mst = new ArrayList<>();
 	
-	public MST(final List<GraphVertex> G /* Graph to find a MST on. */) {
-		// Deduplicate the edges in the graph.
-		Set<GraphEdge<GraphVertex>> edgesInGraph = new HashSet<>();
+	public MST(Set<GraphVertex> G /* Graph to find a MST on. */) {
+		// Add all of the edges in the graph.
+		
+		Queue<GraphEdge> pq = new PriorityQueue<>();
+		int numEdges = 0;
 		for (GraphVertex gv : G) {
-			edgesInGraph.addAll(gv.edges());
+			numEdges += gv.edges().size();
+			pq.addAll(gv.edges().values());
 		}
 		
-		Queue<GraphEdge<GraphVertex>> pq = new PriorityQueue<>();
-		pq.addAll(edgesInGraph);
+		System.out.println("Num edges: " + numEdges);
+		System.out.println("Num vertices: " + G.size());
+		System.out.println("Expecting: " + ((G.size()*(G.size() - 1))/2));
 		
 		UF uf = new UF(G.size());
 		while (!pq.isEmpty() && mst.size() < G.size() - 1) {
-			GraphEdge<GraphVertex> edge = pq.poll();
-			int v = G.indexOf(edge.getStart());
-			int w = G.indexOf(edge.getEnd());
+			GraphEdge edge = pq.poll();
+			int v = G.indexOf(edge.getA());
+			int w = G.indexOf(edge.getB());
 			
 			if (!uf.connected(v, w)) {
 				uf.union(v, w);
@@ -39,13 +42,26 @@ public class MST {
 				weight += edge.getWeight();
 			}
 		}
+		
+		verifyConnected(uf, G);
 	}
 	
 	public double weight() {
 		return this.weight;
 	}
 	
-	public List<GraphEdge<GraphVertex>> mst() {
+	public List<GraphEdge> mst() {
 		return this.mst;
+	}
+	
+	private void verifyConnected(UF uf, List<GraphVertex> G) {
+		for (int i = 0; i < G.size(); i++) {
+			for (int j = i; j < G.size(); j++) {
+				if (!uf.connected(i, j)) {
+					throw new RuntimeException();
+				}
+			}
+		}
+		System.out.println("MST is connected.");
 	}
 }

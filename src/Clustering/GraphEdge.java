@@ -1,32 +1,41 @@
 package Clustering;
 
+import Clustering.AbstractOverlappingClusterMerger.GraphVertex;
+
 /**
  * Represents an edge in a weighted graph. An unweighted edge
  * can simply be a GraphEdge with weight equal to zero.
  * 
  * @author harryross - harryross263@gmail.com.
  */
-public class GraphEdge<T> implements Comparable<GraphEdge<T>>{
+public class GraphEdge implements Comparable<GraphEdge> {
 	
 	/* The vertices at the start and end of this edge */
-	private T start;
-	private T end;
+	private GraphVertex a;
+	private GraphVertex b;
 	
 	/* The weight of the edge */
 	private double weight;
 	
-	public GraphEdge(T start, T end, double weight) {
-		this.start = start;
-		this.end = end;
+	public GraphEdge(GraphVertex a, GraphVertex b, double weight) {
+		this.a = a;
+		this.b = b;
 		this.weight = weight;
 	}
 	
-	public T getStart() {
-		return this.start;
+	public GraphVertex getA() {
+		return this.a;
 	}
 	
-	public T getEnd() {
-		return this.end;
+	public GraphVertex getB() {
+		return this.b;
+	}
+	
+	public GraphVertex getOther(GraphVertex current) {
+		if (current.equals(a)) {
+			return b;
+		}
+		return a;
 	}
 	
 	public double getWeight() {
@@ -37,7 +46,7 @@ public class GraphEdge<T> implements Comparable<GraphEdge<T>>{
 		this.weight = newWeight;
 	}
 	
-	public int compareTo(GraphEdge<T> other) {
+	public int compareTo(GraphEdge other) {
 		return (int) (other.weight - this.weight);
 	}
 }

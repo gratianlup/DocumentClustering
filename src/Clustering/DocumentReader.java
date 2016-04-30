@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 public final class DocumentReader {
 	// Each sentence must end in an unique word
@@ -79,7 +80,7 @@ public final class DocumentReader {
 		ComputeWeights();
 	}
 
-	public List<Cluster> GetBaseClusters(double minWeight) {
+	public Set<Cluster> GetBaseClusters(double minWeight) {
 		return tree_.GetBaseClusters(minWeight);
 	}
 

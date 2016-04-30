@@ -2,8 +2,8 @@ package Clustering;
 
 import java.io.File;
 import java.util.ArrayDeque;
-import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * Kicks off the Suffix Tree (ST) clustering system and launches a GUI to view
@@ -36,12 +36,12 @@ public class SuffixTreeClustering {
 		documentSource = new ReutersSource(files);
 
 		//List<Cluster> clusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MinDegreeClusterMerger(0.1));
-		List<Cluster> clusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MSTMerger(1));
+		Set<Cluster> clusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MSTMerger(2));
 
 		System.out.println("Number of clusters found: " + clusters.size());
 
-		for (Cluster c : clusters) {
-			System.out.println(c.toString());
-		}
+//		for (Cluster c : clusters) {
+//			System.out.println(c.toString());
+//		}
 	}
 }

@@ -32,76 +32,35 @@
 
 package Clustering;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Merges base clusters to produce final clusters using a minimum overlap threshold.
+ * Merges base clusters to produce final clusters using a minimum overlap
+ * threshold.
  */
 public class MinDegreeClusterMerger extends AbstractOverlappingClusterMerger {
 
-	public MinDegreeClusterMerger(double overlapDegree_) {
-		this.minOverlapDegree = overlapDegree_;
+	public MinDegreeClusterMerger(double minOverlapDegree) {
+		this.minOverlapDegree = minOverlapDegree;
 	}
 
-	public List<Cluster> MergeClusters(List<Cluster> baseClustersToMerge) {
+	public Set<Cluster> MergeClusters(Set<Cluster> baseClustersToMerge) {
 		// Build a graph of similar base clusters.
-		List<GraphVertex> baseClusterInfos = generateVertices(baseClustersToMerge);
-		ConnectClusters(baseClusterInfos);
+		Set<GraphVertex> vertices = generateVertices(baseClustersToMerge);
+		ClusterGraph cg = ClusterGraph.buildGraph(vertices, minOverlapDegree);
 
-		// Find the connected components within the graph produced above.
-		Queue<GraphVertex> queue = new LinkedList<GraphVertex>();
-		ArrayList<ArrayList<Cluster>> components = new ArrayList<ArrayList<Cluster>>();
-
-		for (int i = 0; i < baseClusterInfos.size(); i++) {
-			GraphVertex ci = baseClusterInfos.get(i);
-
-			if (ci.isDiscovered()) {
-				// The cluster has already been discovered
-				// and is part of a connected component.
-				continue;
-			}
-
-			// Start a new connect component.
-			ArrayList<Cluster> component = new ArrayList<Cluster>();
-			components.add(component);
-
-			queue.clear();
-			queue.add(ci);
-			ci.setDiscovered(true);
-			FindComponent(queue, component);
-		}
+		// Find the different connected components within the graph produced above.
+		Set<ClusterGraph> connectedComponents = cg.getConnectedComponents();
 
 		// Unify the clusters from each connected component
 		// into a single one and add them to the resulting list.
-		ArrayList<Cluster> clusters = new ArrayList<Cluster>(components.size());
-
-		for (int i = 0; i < components.size(); i++) {
-			ArrayList<Cluster> component = components.get(i);
-			clusters.add(Cluster.Merge(component));
+		Set<Cluster> clusters = new HashSet<>();
+		for (ClusterGraph connectedComponent : connectedComponents) {
+			Set<Cluster> clustersInConnectedComponent = connectedComponent.getClusters();
+			clusters.add(Cluster.Merge(clustersInConnectedComponent));
 		}
 
 		return clusters;
-	}
-
-	// Finds a connected component. It is presumed that the start node
-	// is already found in the specified queue.
-	private void FindComponent(Queue<GraphVertex> queue, ArrayList<Cluster> component) {
-		while (queue.size() > 0) {
-			GraphVertex info = queue.poll();
-			component.add(info.cluster());
-
-			// Add all neighbor nodes to the component.
-			for (int i = 0; i < info.edges().size(); i++) {
-				GraphVertex next = info.edges().get(i).getEnd();
-
-				if (!next.isDiscovered()) {
-					next.setDiscovered(true);
-					queue.add(next);
-				}
-			}
-		}
 	}
 }

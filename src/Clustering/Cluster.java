@@ -33,9 +33,10 @@
 package Clustering;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public final class Cluster implements Comparable<Cluster> {
 	private ArrayList<Document> documents_;
@@ -74,48 +75,6 @@ public final class Cluster implements Comparable<Cluster> {
 		weight_ = documents_.size() * PhrasesWeight() * wordWeight;
 	}
 
-	// Verifies if the cluster and the specified one are similar
-	// (they have some documents in common).
-	public boolean IsSimilarTo(Cluster other, double overlapDegree) {
-		assert(other != null);
-		// ------------------------------------------------
-		// Find the common documents. If there are only a few documents,
-		// a linear search is used; otherwise the search uses a hash table.
-		int common = 0;
-
-		if ((documents_.size() <= 3) && (other.documents_.size() <= 3)) {
-			// Few documents case, do a linear search.
-			for (int i = 0; i < documents_.size(); i++) {
-				Document doc = documents_.get(i);
-				if (other.documents_.contains(doc)) {
-					common++;
-				}
-			}
-		} else {
-			// Many documents case, use a hash table.
-			Hashtable<Document, Document> hash = new Hashtable<Document, Document>();
-			int count = documents_.size();
-
-			for (int i = 0; i < count; i++) {
-				Document doc = documents_.get(i);
-				hash.put(doc, doc);
-			}
-
-			// Check which of the documents from the other clusters
-			// are found in the hash table.
-			count = other.documents_.size();
-
-			for (int i = 0; i < count; i++) {
-				if (hash.containsKey(other.documents_.get(i))) {
-					common++;
-				}
-			}
-		}
-
-		return ((double) common / (double) documents_.size()) > overlapDegree
-				&& ((double) common / (double) other.documents_.size()) > overlapDegree;
-	}
-
 	/*
 	 * Returns the 'distance' between this cluster and another. The distance can
 	 * be thought of as the average similarity of the documents in the two clusters.
@@ -148,42 +107,28 @@ public final class Cluster implements Comparable<Cluster> {
 
 	// Unifies all clusters from the specified list
 	// into a single cluster containing the union of the documents.
-	public static Cluster Merge(List<Cluster> clusters) {
+	public static Cluster Merge(Set<Cluster> clusters) {
 		assert(clusters != null);
-		// ------------------------------------------------
-		ArrayList<Phrase> allPhrases = new ArrayList<Phrase>();
+
 		Cluster newCluster = new Cluster(clusters.size() * 2, clusters.size());
-		Hashtable<Document, Document> hash = new Hashtable<Document, Document>();
-
-		// Each document must appear a single time in the new cluster
-		// (the list must behave as a mathematical set).
-		for (int i = 0; i < clusters.size(); i++) {
-			Cluster cluster = clusters.get(i);
-			List<Document> docs = cluster.Documents();
-
-			for (int j = 0; j < docs.size(); j++) {
-				Document doc = docs.get(j);
-				hash.put(doc, doc);
-			}
-
-			// All sentences from the clusters must appear in the new one.
-			List<Phrase> phrases = cluster.Phrases();
-
-			for (int j = 0; j < phrases.size(); j++) {
-				allPhrases.add(phrases.get(j));
-			}
+		Set<Document> allDocuments = new HashSet<>();
+		
+		// Each document must appear a single time in the new cluster, as must
+		// each Phrase in each original cluster.
+		for (Cluster c : clusters) {
+			allDocuments.addAll(c.Documents());
+			newCluster.Phrases().addAll(c.Phrases());
 		}
 
 		// Add the documents to the new cluster.
-		Iterator<Document> docIt = hash.keySet().iterator();
-
-		while (docIt.hasNext()) {
-			newCluster.documents_.add(docIt.next());
-		}
-
-		// Associated the sentences with the new cluster.
-		newCluster.SetPhrases(allPhrases);
+		newCluster.Documents().addAll(allDocuments);
 		return newCluster;
+	}
+	
+	public static Cluster Merge(List<Cluster> clusters) {
+		Set<Cluster> clusterSet = new HashSet<>();
+		clusterSet.addAll(clusters);
+		return Merge(clusterSet);
 	}
 
 	public double Weight() {

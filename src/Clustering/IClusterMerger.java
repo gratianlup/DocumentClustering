@@ -1,6 +1,6 @@
 package Clustering;
 
-import java.util.List;
+import java.util.Set;
 
 public interface IClusterMerger {
 
@@ -10,5 +10,5 @@ public interface IClusterMerger {
         * {@link MSTMerger}. 
         * @return
         */
-       List<Cluster> MergeClusters(List<Cluster> baseClustersToMerge);
+       Set<Cluster> MergeClusters(Set<Cluster> baseClustersToMerge);
 }

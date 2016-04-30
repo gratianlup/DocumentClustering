@@ -33,8 +33,10 @@
 package Clustering;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public final class SuffixTree {
     // Represents a node in the tree.
@@ -214,10 +216,9 @@ public final class SuffixTree {
         phreases_++;
     }
 
-    // Returns a list with all base clusters
-    // having a weight at lest equal to the specified one.
-    public List<Cluster> GetBaseClusters(double minWeight) {
-        ArrayList<Cluster> clusters =  new ArrayList<Cluster>();
+    // Returns a set containing the base clusters with weight > minWeight.
+    public Set<Cluster> GetBaseClusters(double minWeight) {
+        Set<Cluster> clusters =  new HashSet<>();
         ArrayList<Edge> edges = new ArrayList<Edge>();
 
         // Search the clusters on all edges originating from the root.
@@ -368,7 +369,7 @@ public final class SuffixTree {
         return phrase;
     }
 
-    private Cluster GetBaseClustersImpl(Node node, List<Cluster> clusters,
+    private Cluster GetBaseClustersImpl(Node node, Set<Cluster> clusters,
                                         List<Edge> edges, double minWeight) {
         assert(!node.IsLeaf());
         assert(edges.size() > 0);
