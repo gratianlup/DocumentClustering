@@ -246,6 +246,9 @@ public final class Cluster implements Comparable<Cluster> {
 		sb.append(weight_);
 		sb.append("; Number docs: ");
 		sb.append(documents_.size());
+		for (Phrase p : phrases_) {
+			sb.append(p.toString());
+		}
 		return sb.toString();
 	}
 }

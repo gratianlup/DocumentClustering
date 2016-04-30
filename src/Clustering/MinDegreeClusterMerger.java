@@ -48,17 +48,17 @@ public class MinDegreeClusterMerger extends AbstractOverlappingClusterMerger {
 
 	public List<Cluster> MergeClusters(List<Cluster> baseClustersToMerge) {
 		// Build a graph of similar base clusters.
-		List<ClusterInfo> baseClusterInfos = generateClusterInfo(baseClustersToMerge);
+		List<GraphVertex> baseClusterInfos = generateVertices(baseClustersToMerge);
 		ConnectClusters(baseClusterInfos);
 
 		// Find the connected components within the graph produced above.
-		Queue<ClusterInfo> queue = new LinkedList<ClusterInfo>();
+		Queue<GraphVertex> queue = new LinkedList<GraphVertex>();
 		ArrayList<ArrayList<Cluster>> components = new ArrayList<ArrayList<Cluster>>();
 
 		for (int i = 0; i < baseClusterInfos.size(); i++) {
-			ClusterInfo ci = baseClusterInfos.get(i);
+			GraphVertex ci = baseClusterInfos.get(i);
 
-			if (ci.Discovered()) {
+			if (ci.isDiscovered()) {
 				// The cluster has already been discovered
 				// and is part of a connected component.
 				continue;
@@ -70,7 +70,7 @@ public class MinDegreeClusterMerger extends AbstractOverlappingClusterMerger {
 
 			queue.clear();
 			queue.add(ci);
-			ci.SetDiscovered(true);
+			ci.setDiscovered(true);
 			FindComponent(queue, component);
 		}
 
@@ -88,17 +88,17 @@ public class MinDegreeClusterMerger extends AbstractOverlappingClusterMerger {
 
 	// Finds a connected component. It is presumed that the start node
 	// is already found in the specified queue.
-	private void FindComponent(Queue<ClusterInfo> queue, ArrayList<Cluster> component) {
+	private void FindComponent(Queue<GraphVertex> queue, ArrayList<Cluster> component) {
 		while (queue.size() > 0) {
-			ClusterInfo info = queue.poll();
-			component.add(info.Cluster());
+			GraphVertex info = queue.poll();
+			component.add(info.cluster());
 
 			// Add all neighbor nodes to the component.
-			for (int i = 0; i < info.Edges().size(); i++) {
-				ClusterInfo next = info.Edges().get(i).getOther();
+			for (int i = 0; i < info.edges().size(); i++) {
+				GraphVertex next = info.edges().get(i).getEnd();
 
-				if (!next.Discovered()) {
-					next.SetDiscovered(true);
+				if (!next.isDiscovered()) {
+					next.setDiscovered(true);
 					queue.add(next);
 				}
 			}

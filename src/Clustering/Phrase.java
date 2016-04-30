@@ -61,12 +61,13 @@ public final class Phrase {
 
     @Override
     public String toString() {
-        String text = "";
+    	StringBuilder sb = new StringBuilder();
 
-        for(int i = 0; i < words_.size(); i++) {
-            text += words_.get(i) + " ";
+        for(Word word : words_) {
+            sb.append(word.GetWord());
+            sb.append(" ");
         }
 
-        return text;
+        return sb.toString();
     }
 }

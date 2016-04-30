@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractOverlappingClusterMerger implements IClusterMerger {
-	
+
 	/**
-	 * The degree to which the number of documents in a base cluster must overlap
-	 * before the two base clusters can be merged into one cluster. 
+	 * The degree to which the number of documents in a base cluster must
+	 * overlap before the two base clusters can be merged into one cluster.
 	 */
 	double minOverlapDegree;
 
@@ -18,10 +18,10 @@ public abstract class AbstractOverlappingClusterMerger implements IClusterMerger
 	 * Distance is defined as the average overlap between the document members
 	 * of the cluster.
 	 */
-	void ConnectClusters(List<ClusterInfo> baseClusterInfo) {
-		// Compare all pairs of clusters and add an edge
+	void ConnectClusters(List<GraphVertex> graph) {
+		// Compare all pairs of base clusters and add an edge
 		// between the ones that are similar.
-		int count = baseClusterInfo.size();
+		int count = graph.size();
 
 		for (int i = 0; i < count; i++) {
 			for (int j = 0; j < count; j++) {
@@ -30,87 +30,72 @@ public abstract class AbstractOverlappingClusterMerger implements IClusterMerger
 					continue;
 				}
 
-				ClusterInfo a = baseClusterInfo.get(i);
-				ClusterInfo b = baseClusterInfo.get(j);
+				GraphVertex a = graph.get(i);
+				GraphVertex b = graph.get(j);
 
-				double similarity = a.Cluster().similarity(b.Cluster());
+				double similarity = a.cluster().similarity(b.cluster());
 				if (similarity > minOverlapDegree) {
-					// The documents are similar enough, connect them.
-					a.Edges().add(new ClusterInfoEdge(b, 1 - similarity));
+					// The documents are similar enough, so connect them.
+					GraphEdge<GraphVertex> forwardEdge = new GraphEdge<GraphVertex>(a, b, 1 - similarity);
+					GraphEdge<GraphVertex> backwardEdge = new GraphEdge<GraphVertex>(b, a, 1 - similarity);
+					
+					a.edges().add(forwardEdge);
+					b.edges().add(backwardEdge);
 				}
 			}
 		}
 	}
-	
+
 	/**
-	 * Returns a list of {@link ClusterInfo} objects describing the list of
-	 * base clusters passed to it.
-	 * @param baseClusters - clusters for which to generate info.
+	 * Returns a list of {@link GraphVertex} objects describing the list of base
+	 * clusters passed to it.
+	 * 
+	 * @param baseClusters
+	 *            - clusters for which to generate info.
 	 * @return
 	 */
-	public List<ClusterInfo> generateClusterInfo(List<Cluster> baseClusters) {
-		List<ClusterInfo> clusterInfos = new ArrayList<ClusterInfo>();
+	public List<GraphVertex> generateVertices(List<Cluster> baseClusters) {
+		List<GraphVertex> vertices = new ArrayList<GraphVertex>();
 		for (Cluster bc : baseClusters) {
-			clusterInfos.add(new ClusterInfo(bc));
+			vertices.add(new GraphVertex(bc));
 		}
-		
-		return clusterInfos;
+
+		return vertices;
 	}
-	
+
 	public void setOverlapDegree(double overlapDegree_) {
 		this.minOverlapDegree = overlapDegree_;
 	}
 
-	class ClusterInfo {
+	class GraphVertex {
+		/* The cluster that this vertex belongs to. */
 		private Cluster cluster;
+		
+		/* Whether or not this vertex has been discovered. Used to
+		 * keep track of a BFS. */
 		private boolean discovered;
-		private ArrayList<ClusterInfoEdge> edges;
+		
+		private ArrayList<GraphEdge<GraphVertex>> edges;
 
-		public ClusterInfo(Cluster cluster) {
+		public GraphVertex(Cluster cluster) {
 			this.cluster = cluster;
-			this.edges = new ArrayList<ClusterInfoEdge>();
+			this.edges = new ArrayList<GraphEdge<GraphVertex>>();
 		}
 
-		public Cluster Cluster() {
+		public Cluster cluster() {
 			return cluster;
 		}
 
-		public boolean Discovered() {
+		public boolean isDiscovered() {
 			return discovered;
 		}
 
-		public void SetDiscovered(boolean value) {
+		public void setDiscovered(boolean value) {
 			discovered = value;
 		}
 
-		public List<ClusterInfoEdge> Edges() {
+		public List<GraphEdge<GraphVertex>> edges() {
 			return edges;
-		}
-	}
-	
-	class ClusterInfoEdge implements Comparable<ClusterInfoEdge> {
-		/* The ClusterInfo that this edge connects to. */
-		private ClusterInfo other;
-		
-		/* The weight of this edge. i.e. 1 - the similarity of the clusters
-		 * at either end of the edge. */
-		private double weight;
-		
-		public ClusterInfoEdge(ClusterInfo other, double weight) {
-			this.other = other;
-			this.weight = weight;
-		}
-		
-		public ClusterInfo getOther() {
-			return this.other;
-		}
-		
-		public double getWeight() {
-			return this.weight;
-		}
-		
-		public int compareTo(ClusterInfoEdge other) {
-			return (int) (other.weight - weight);
 		}
 	}
 }
