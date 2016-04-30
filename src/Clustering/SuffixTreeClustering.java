@@ -12,9 +12,6 @@ import java.util.Set;
  */
 public class SuffixTreeClustering {
 
-	/* The source from which to read the documents. */
-	private static IDocumentSource documentSource;
-
 	/**
 	 * Takes the filenames of the documents to be clustered as arguments.
 	 * 
@@ -27,15 +24,18 @@ public class SuffixTreeClustering {
 			System.exit(0);
 		}
 
-		Queue<File> files = new ArrayDeque<>();
+		Queue<File> minDegreeFiles = new ArrayDeque<>();
+		Queue<File> mstFiles = new ArrayDeque<>();
 		for (String s : args) {
-			files.add(new File(s));
+			minDegreeFiles.add(new File(s));
+			mstFiles.add(new File(s));
 		}
 
-		documentSource = new ReutersSource(files);
-
-		Set<Cluster> minDegreeClusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MinDegreeClusterMerger(0.99));
-		Set<Cluster> mstClusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MSTMerger(1));
+		IDocumentSource minDegreeSource = new ReutersSource(minDegreeFiles);
+		IDocumentSource mstSource = new ReutersSource(mstFiles);
+		
+		Set<Cluster> minDegreeClusters = ClusterFinder.Find(minDegreeSource, Integer.MAX_VALUE, 0, new MinDegreeClusterMerger(0.99));
+		Set<Cluster> mstClusters = ClusterFinder.Find(mstSource, Integer.MAX_VALUE, 0.0, new MSTMerger(10));
 
 		System.out.println("Number of clusters found using minDegree: " + minDegreeClusters.size());
 		System.out.println("Number of clusters found using MST: " + mstClusters.size());
