@@ -35,13 +35,10 @@ public class SuffixTreeClustering {
 
 		documentSource = new ReutersSource(files);
 
-		//List<Cluster> clusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MinDegreeClusterMerger(0.1));
-		Set<Cluster> clusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MSTMerger(1));
+		Set<Cluster> minDegreeClusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MinDegreeClusterMerger(0.99));
+		Set<Cluster> mstClusters = ClusterFinder.Find(documentSource, Integer.MAX_VALUE, 0, new MSTMerger(1));
 
-		System.out.println("Number of clusters found: " + clusters.size());
-
-//		for (Cluster c : clusters) {
-//			System.out.println(c.toString());
-//		}
+		System.out.println("Number of clusters found using minDegree: " + minDegreeClusters.size());
+		System.out.println("Number of clusters found using MST: " + mstClusters.size());
 	}
 }
