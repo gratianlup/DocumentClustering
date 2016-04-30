@@ -43,7 +43,10 @@ import java.util.Iterator;
 import javax.swing.JPanel;
 
 public class ClusterViewer extends JPanel {
-    class NodeInfo {
+
+	private static final long serialVersionUID = -4608038380647431251L;
+
+	class NodeInfo {
         public int Width;
         public int X;
         public int Y;

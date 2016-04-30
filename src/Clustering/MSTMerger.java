@@ -15,6 +15,8 @@ public class MSTMerger extends AbstractOverlappingClusterMerger {
 	private final int numberOfEdgesToRemove;
 
 	public MSTMerger(int numberOfClustersToFind) {
+		// The number of edges that we must remove from a spanning tree in order
+		// to be left with K unique connected components is equal to K - 1.
 		this.numberOfEdgesToRemove = numberOfClustersToFind - 1;
 		// Set the minimum overlapDegree to be zero so that the initial base
 		// cluster graph is constructed as a dense graph with pairwise edges 

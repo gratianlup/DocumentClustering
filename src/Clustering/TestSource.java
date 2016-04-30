@@ -31,10 +31,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package Clustering;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 public final class TestSource implements IDocumentSource {
-    private String file_;
     private BufferedReader stream_;
     private String[] sentences_;
     private String[] words_;
@@ -42,7 +43,6 @@ public final class TestSource implements IDocumentSource {
     private int wordPosition_;
 
     public TestSource(String file) throws IOException {
-        file_ = file;
         stream_ = new BufferedReader(new FileReader(file));
     }
 
