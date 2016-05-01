@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,6 +20,10 @@ import java.util.stream.Stream;
  * @author Harry Ross - harryross263@gmail.com
  */
 public class ReutersSource implements IDocumentSource {
+
+	private List<Article> articles;
+	private int currentArticle;
+
 	/* The list of files making up the Reuters corpus. */
 	private Queue<File> files;
 
@@ -31,15 +37,8 @@ public class ReutersSource implements IDocumentSource {
 	private Set<String> currTopics;
 
 	public ReutersSource(File folder) {
-		this.files = readFiles(folder);
-	}
-
-	public Queue<File> readFiles(File folder) {
-		Queue<File> newFiles = new ArrayDeque<>();
-		for (File file : folder.listFiles()) {
-			newFiles.add(file);
-		}
-		return newFiles;
+		this.articles = new ReutersParser(folder).parse();
+		currentArticle = 0;
 	}
 
 	/**
@@ -52,68 +51,15 @@ public class ReutersSource implements IDocumentSource {
 	 * Returns whether a document was successfully read or not.
 	 */
 	public boolean readDocument() {
-		if (files == null || files.isEmpty()) {
+		if (articles == null || articles.isEmpty() || currentArticle >= articles.size() - 1) {
 			sentences.clear();
 			System.out.println("Read all documents from this source");
 			return false;
 		}
 
-		sentences = new ArrayDeque<>();
-		currTopics = new HashSet<>();
-		try(Stream<String> stream = Files.lines(files.poll().toPath())) {
-			stream.forEach(line -> {
-				if (line.startsWith("<D>")) {
-					// Read into current topics.
-					readTopics(line);
-					return;
-				}
-				Queue<String> sentence = new ArrayDeque<>();
-				for (String word : line.split("\\s")) {
-					// Skip blank lines.
-					if (word.length() == 0)
-						continue;
-					sentence.offer(word);
-				}
-				// Add the queue of words representing one sentence into the
-				// queue of sentences.
-				sentences.offer(sentence);
-			});
-
-			if (currTopics.isEmpty()) {
-				// This document has no topics, so read the next one.
-				return readDocument();
-			}
-			return true;
-		} catch (IOException e) {
-			System.out.println(e);
-			throw new RuntimeException("File not found");
-		}
-	}
-
-	public void readTopics(String line) {
-		currTopics = new HashSet<String>(
-				Arrays.stream(
-						parseTag("TOPICS", line)
-							.replace("</D>", " ")
-							.replace("<D>", " ")
-							.split("\\s+"))
-					.filter(x -> !x.equals(""))
-					.collect(Collectors.toList())
-				);
-		for (String s : currTopics) {
-			System.out.println(s);
-		}
-	}
-
-	private String parseTag(String tag, String text) {
-		String startTag = "<" + tag + ">";
-		String endTag = "</" + tag + ">";
-		int startTagIndex = text.indexOf(startTag);
-		if (startTagIndex < 0) return "";
-		int start = startTagIndex + startTag.length();
-		int end = text.indexOf(endTag, start);
-		if (end < 0) throw new IllegalArgumentException("no end, tag=" + tag + " text=" + text);
-		return text.substring(start, end);
+		currentArticle++;
+		sentences = articles.get(currentArticle).sentences();
+		return true;
 	}
 
 	@Override

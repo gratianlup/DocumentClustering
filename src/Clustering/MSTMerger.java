@@ -7,7 +7,7 @@ import java.util.Set;
  * Merges base clusters to produce final clusters using MST clustering. Not an
  * example of a great clustering algorithm, but a twist on the standard STC
  * merging algorithm of binary similarity.
- * 
+ *
  * @author harryross - harryross263@gmail.com.
  */
 public class MSTMerger extends AbstractOverlappingClusterMerger {
@@ -19,13 +19,14 @@ public class MSTMerger extends AbstractOverlappingClusterMerger {
 		// to be left with K unique connected components is equal to K - 1.
 		this.numberOfEdgesToRemove = numberOfClustersToFind - 1;
 		// Set the minimum overlapDegree to be zero so that the initial base
-		// cluster graph is constructed as a dense graph with pairwise edges 
+		// cluster graph is constructed as a dense graph with pairwise edges
 		// between each individual base cluster in the graph.
 		this.minOverlapDegree = 0.0;
 	}
 
 	@Override
 	public Set<Cluster> MergeClusters(Set<Cluster> baseClustersToMerge) {
+		System.out.println("Merging clusters");
 		// Generate the base cluster graph.
 		Set<GraphVertex> vertices = generateVertices(baseClustersToMerge);
 		ClusterGraph cg = ClusterGraph.buildGraph(vertices, this.minOverlapDegree);

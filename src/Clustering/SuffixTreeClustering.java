@@ -28,13 +28,13 @@ public class SuffixTreeClustering {
 			throw new RuntimeException(folder.getAbsolutePath() + " doesn't exist.");
 		}
 
-		IDocumentSource minDegreeSource = new ReutersSource(folder);
+		//IDocumentSource minDegreeSource = new ReutersSource(folder);
 		IDocumentSource mstSource = new ReutersSource(folder);
 
-		Set<Cluster> minDegreeClusters = ClusterFinder.Find(minDegreeSource, Integer.MAX_VALUE, 0, new MinDegreeClusterMerger(0.99));
+		//Set<Cluster> minDegreeClusters = ClusterFinder.Find(minDegreeSource, Integer.MAX_VALUE, 0, new MinDegreeClusterMerger(0.99));
 		Set<Cluster> mstClusters = ClusterFinder.Find(mstSource, Integer.MAX_VALUE, 0.0, new MSTMerger(10));
 
-		System.out.println("Number of clusters found using minDegree: " + minDegreeClusters.size());
+		//System.out.println("Number of clusters found using minDegree: " + minDegreeClusters.size());
 		System.out.println("Number of clusters found using MST: " + mstClusters.size());
 	}
 }
