@@ -9,7 +9,7 @@ import java.util.Queue;
 /**
  * Document source suitable for representing the Reuters document corpus (or any
  * corpus split across multiple files)
- * 
+ *
  * @author Harry Ross - harryross263@gmail.com
  */
 public class ReutersSource implements IDocumentSource {
@@ -22,17 +22,27 @@ public class ReutersSource implements IDocumentSource {
 	/* A collection of the words that make up the current sentence */
 	private Queue<String> currSentence;
 
-	public ReutersSource(Queue<File> files) {
-		this.files = files;
+	public ReutersSource(File folder) {
+		this.files = readFiles(folder);
+	}
+
+	public Queue<File> readFiles(File folder) {
+		Queue<File> newFiles = new ArrayDeque<>();
+		for (File file : folder.listFiles()) {
+			if (file.getName().endsWith(".sgm")) {
+				newFiles.add(file);
+			}
+		}
+		return newFiles;
 	}
 
 	/**
 	 * Constructs a queue of sentences that represent the next document. Each
 	 * sentence itself is a queue of words such that polling until empty will
 	 * re-construct the original sentence.
-	 * 
+	 *
 	 * Should be called once for each document in the source.
-	 * 
+	 *
 	 * Returns whether a document was successfully read or not.
 	 */
 	public boolean readDocument() {
@@ -56,7 +66,7 @@ public class ReutersSource implements IDocumentSource {
 				// queue of sentences.
 				sentences.offer(sentence);
 			});
-			
+
 			return true;
 		} catch (IOException e) {
 			System.out.println(e);
@@ -79,7 +89,7 @@ public class ReutersSource implements IDocumentSource {
 
 	/**
 	 * Indicates whether the current document has another sentence or not.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
