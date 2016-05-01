@@ -4,7 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Document source suitable for representing the Reuters document corpus (or any
@@ -21,6 +25,9 @@ public class ReutersSource implements IDocumentSource {
 
 	/* A collection of the words that make up the current sentence */
 	private Queue<String> currSentence;
+
+	/* The topics included in the current document. */
+	private Set<String> currTopics;
 
 	public ReutersSource(File folder) {
 		this.files = readFiles(folder);
@@ -53,8 +60,14 @@ public class ReutersSource implements IDocumentSource {
 		}
 
 		sentences = new ArrayDeque<>();
+		currTopics = new HashSet<>();
 		try {
 			Files.lines(files.poll().toPath()).forEach(line -> {
+				if (line.startsWith("<D>")) {
+					// Read into current topics.
+					readTopics(line);
+					return;
+				}
 				Queue<String> sentence = new ArrayDeque<>();
 				for (String word : line.split("\\s")) {
 					// Skip blank lines.
@@ -72,6 +85,32 @@ public class ReutersSource implements IDocumentSource {
 			System.out.println(e);
 			throw new RuntimeException("File not found");
 		}
+	}
+
+	public void readTopics(String line) {
+		currTopics = new HashSet<String>(
+				Arrays.stream(
+						parseTag("TOPICS", line)
+							.replace("</D>", " ")
+							.replace("<D>", " ")
+							.split("\\s+"))
+					.filter(x -> !x.equals(""))
+					.collect(Collectors.toList())
+				);
+		for (String s : currTopics) {
+			System.out.println(s);
+		}
+	}
+
+	private String parseTag(String tag, String text) {
+		String startTag = "<" + tag + ">";
+		String endTag = "</" + tag + ">";
+		int startTagIndex = text.indexOf(startTag);
+		if (startTagIndex < 0) return "";
+		int start = startTagIndex + startTag.length();
+		int end = text.indexOf(endTag, start);
+		if (end < 0) throw new IllegalArgumentException("no end, tag=" + tag + " text=" + text);
+		return text.substring(start, end);
 	}
 
 	@Override

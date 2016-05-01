@@ -26,6 +26,7 @@ public class ExtractReuters {
 		for (int i = 0; i < files.length; i++) {
 			files[i].delete();
 		}
+		System.out.println("All files deleted.");
 
 	}
 
@@ -45,7 +46,7 @@ public class ExtractReuters {
 		}
 	}
 
-	Pattern EXTRACTION_PATTERN = Pattern.compile("<TITLE>(.*?)</TITLE>|<DATE>(.*?)</DATE>|<BODY>(.*?)</BODY>");
+	Pattern EXTRACTION_PATTERN = Pattern.compile("<BODY>(.*?)</BODY>|<TOPICS>(.*?)</TOPICS>");
 
 	private static String[] META_CHARS = { "&", "<", ">", "\"", "'" };
 

@@ -1,8 +1,6 @@
 package Clustering;
 
 import java.io.File;
-import java.util.ArrayDeque;
-import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -20,11 +18,15 @@ public class SuffixTreeClustering {
 	public static void main(String[] args) {
 		if (args.length == 0) {
 			System.out.println(
-					"Please provide the paths of files to cluster (i.e $ java SuffixTreeClustering file1 [file2+])");
+					"Please provide the top level directory (i.e $ java SuffixTreeClustering \"~/Reuters/\")");
 			System.exit(0);
 		}
 
 		File folder = new File(args[0]);
+
+		if (!folder.exists()) {
+			throw new RuntimeException(folder.getAbsolutePath() + " doesn't exist.");
+		}
 
 		IDocumentSource minDegreeSource = new ReutersSource(folder);
 		IDocumentSource mstSource = new ReutersSource(folder);
