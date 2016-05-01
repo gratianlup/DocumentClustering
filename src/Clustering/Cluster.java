@@ -81,7 +81,7 @@ public final class Cluster implements Comparable<Cluster> {
 	 * i.e. a measure of how overlapping the clusters are. If the two clusters are exactly
 	 * identical then the similarity would be 1. If there is no overlap then the distance would be 0.
 	 */
-	public double similarity(Cluster other) {	
+	public double similarity(Cluster other) {
 		Hashtable<Document, Document> hash = new Hashtable<Document, Document>();
 
 		for (int i = 0; i < documents_.size(); i++) {
@@ -97,10 +97,10 @@ public final class Cluster implements Comparable<Cluster> {
 				common++;
 			}
 		}
-		
+
 		double dist_forward = common / (double) documents_.size();
 		double dist_backward = common / (double) other.documents_.size();
-		
+
 		// Return the average distance between these two clusters.
 		return (dist_forward + dist_backward) / 2.0 ;
 	}
@@ -112,7 +112,7 @@ public final class Cluster implements Comparable<Cluster> {
 
 		Cluster newCluster = new Cluster(clusters.size() * 2, clusters.size());
 		Set<Document> allDocuments = new HashSet<>();
-		
+
 		// Each document must appear a single time in the new cluster, as must
 		// each Phrase in each original cluster.
 		for (Cluster c : clusters) {
@@ -124,7 +124,7 @@ public final class Cluster implements Comparable<Cluster> {
 		newCluster.Documents().addAll(allDocuments);
 		return newCluster;
 	}
-	
+
 	public static Cluster Merge(List<Cluster> clusters) {
 		Set<Cluster> clusterSet = new HashSet<>();
 		clusterSet.addAll(clusters);
@@ -195,5 +195,12 @@ public final class Cluster implements Comparable<Cluster> {
 			sb.append(p.toString());
 		}
 		return sb.toString();
+	}
+
+	public void printArticles(List<Article> articles) {
+		for (Document d : documents_) {
+			System.out.println("--------------------------------------");
+			System.out.println(articles.get(d.Index()).bodyTag);
+		}
 	}
 }

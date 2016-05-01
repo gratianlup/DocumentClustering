@@ -51,6 +51,10 @@ public class ReutersSource implements IDocumentSource {
 	 * Returns whether a document was successfully read or not.
 	 */
 	public boolean readDocument() {
+		if (currentArticle > 200) {
+			System.out.println("Terminating at 100 articles for testing.");
+			return false;
+		}
 		if (articles == null || articles.isEmpty() || currentArticle >= articles.size() - 1) {
 			sentences.clear();
 			System.out.println("Read all documents from this source");
@@ -60,6 +64,10 @@ public class ReutersSource implements IDocumentSource {
 		currentArticle++;
 		sentences = articles.get(currentArticle).sentences();
 		return true;
+	}
+
+	public List<Article> articles() {
+		return this.articles;
 	}
 
 	@Override
