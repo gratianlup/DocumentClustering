@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Document source suitable for representing the Reuters document corpus (or any
@@ -36,9 +37,7 @@ public class ReutersSource implements IDocumentSource {
 	public Queue<File> readFiles(File folder) {
 		Queue<File> newFiles = new ArrayDeque<>();
 		for (File file : folder.listFiles()) {
-			if (file.getName().endsWith(".sgm")) {
-				newFiles.add(file);
-			}
+			newFiles.add(file);
 		}
 		return newFiles;
 	}
@@ -61,8 +60,8 @@ public class ReutersSource implements IDocumentSource {
 
 		sentences = new ArrayDeque<>();
 		currTopics = new HashSet<>();
-		try {
-			Files.lines(files.poll().toPath()).forEach(line -> {
+		try(Stream<String> stream = Files.lines(files.poll().toPath())) {
+			stream.forEach(line -> {
 				if (line.startsWith("<D>")) {
 					// Read into current topics.
 					readTopics(line);
@@ -80,6 +79,10 @@ public class ReutersSource implements IDocumentSource {
 				sentences.offer(sentence);
 			});
 
+			if (currTopics.isEmpty()) {
+				// This document has no topics, so read the next one.
+				return readDocument();
+			}
 			return true;
 		} catch (IOException e) {
 			System.out.println(e);

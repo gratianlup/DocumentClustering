@@ -73,7 +73,6 @@ public final class DocumentReader {
 	// Reads all documents from the specified source.
 	public void Read() {
 		while (source_.HasDocument()) {
-			System.out.println("Source has document");
 			ReadDocument(source_);
 		}
 
