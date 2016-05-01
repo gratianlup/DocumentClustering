@@ -48,15 +48,16 @@ public class ReutersSource implements IDocumentSource {
 				Queue<String> sentence = new ArrayDeque<>();
 				for (String word : line.split("\\s")) {
 					// Skip blank lines.
-					if (word.length() == 0)
+					if (word.length() == 0) {
 						continue;
+					}
 					sentence.offer(word);
 				}
 				// Add the queue of words representing one sentence into the
 				// queue of sentences.
 				sentences.offer(sentence);
 			});
-			
+
 			return true;
 		} catch (IOException e) {
 			System.out.println(e);
@@ -68,8 +69,7 @@ public class ReutersSource implements IDocumentSource {
 	public boolean HasDocument() {
 		if (HasSentence()) {
 			// The STC implementation should only call this method once all of
-			// the sentences
-			// from the current document have been read.
+			// the sentences from the current document have been read.
 			throw new RuntimeException("HasDocument called before the current document has been completely read.");
 		}
 		// The current document has been fully read, so attempt to read in the
@@ -95,7 +95,7 @@ public class ReutersSource implements IDocumentSource {
 
 	public boolean readSentence() {
 		if (sentences == null || sentences.isEmpty()) {
-			// Either sentences hasn't been initialised or we've read the entire
+			// Either sentences hasn't been initialized or we've read the entire
 			// document.
 			return false;
 		}

@@ -35,11 +35,10 @@ public class MSTMerger extends AbstractOverlappingClusterMerger {
 		System.out.println("Number of unique edges in MST: " + mst.getUniqueEdges().size());
 
 		// Now that we have a MST on the base cluster graph, remove the
-		// numberOfClustersToFind largest edges in order to leave
+		// numberOfClustersToFind - 1 largest edges in order to leave
 		// numberOfClustersToFind connected components (final clusters).
 		ClusterGraph finalGraph = ClusterGraph.removeLargestEdges(mst, numberOfEdgesToRemove);
 		System.out.println("Number of unique edges in finalGraph: " + finalGraph.getUniqueEdges().size());
-		System.out.println("Number of edges removed: " + numberOfEdgesToRemove);
 
 		// Now that we have the final cluster graph, we need to merge the clusters represented in
 		// each different component into their own cluster.

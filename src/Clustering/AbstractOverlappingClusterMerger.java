@@ -24,7 +24,6 @@ public abstract class AbstractOverlappingClusterMerger implements IClusterMerger
 		for (Cluster bc : baseClusters) {
 			vertices.add(new GraphVertex(bc));
 		}
-
 		return vertices;
 	}
 
@@ -32,15 +31,9 @@ public abstract class AbstractOverlappingClusterMerger implements IClusterMerger
 		this.minOverlapDegree = overlapDegree_;
 	}
 
-	class GraphVertex implements Cloneable {
+	class GraphVertex {
 		/* The cluster that this vertex belongs to. */
 		private Cluster cluster;
-
-		/*
-		 * Whether or not this vertex has been discovered. Used to keep track of
-		 * a BFS.
-		 */
-		private boolean discovered;
 
 		public GraphVertex(Cluster cluster) {
 			this.cluster = cluster;
@@ -48,19 +41,6 @@ public abstract class AbstractOverlappingClusterMerger implements IClusterMerger
 
 		public Cluster cluster() {
 			return cluster;
-		}
-
-		public boolean isDiscovered() {
-			return discovered;
-		}
-
-		public void setDiscovered(boolean value) {
-			discovered = value;
-		}
-		
-		@Override
-		public GraphVertex clone() {
-			return new GraphVertex(cluster);
 		}
 	}
 }
