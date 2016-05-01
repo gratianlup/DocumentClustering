@@ -4,15 +4,26 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Queue;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Document source suitable for representing the Reuters document corpus (or any
  * corpus split across multiple files)
- * 
+ *
  * @author Harry Ross - harryross263@gmail.com
  */
 public class ReutersSource implements IDocumentSource {
+
+	private List<Article> articles;
+	private int currentArticle;
+
 	/* The list of files making up the Reuters corpus. */
 	private Queue<File> files;
 
@@ -22,47 +33,33 @@ public class ReutersSource implements IDocumentSource {
 	/* A collection of the words that make up the current sentence */
 	private Queue<String> currSentence;
 
-	public ReutersSource(Queue<File> files) {
-		this.files = files;
+	/* The topics included in the current document. */
+	private Set<String> currTopics;
+
+	public ReutersSource(File folder) {
+		this.articles = new ReutersParser(folder).parse();
+		currentArticle = 0;
 	}
 
 	/**
 	 * Constructs a queue of sentences that represent the next document. Each
 	 * sentence itself is a queue of words such that polling until empty will
 	 * re-construct the original sentence.
-	 * 
+	 *
 	 * Should be called once for each document in the source.
-	 * 
+	 *
 	 * Returns whether a document was successfully read or not.
 	 */
 	public boolean readDocument() {
-		if (files == null || files.isEmpty()) {
+		if (articles == null || articles.isEmpty() || currentArticle >= articles.size() - 1) {
 			sentences.clear();
 			System.out.println("Read all documents from this source");
 			return false;
 		}
-
-		sentences = new ArrayDeque<>();
-		try {
-			Files.lines(files.poll().toPath()).forEach(line -> {
-				Queue<String> sentence = new ArrayDeque<>();
-				for (String word : line.split("\\s")) {
-					// Skip blank lines.
-					if (word.length() == 0) {
-						continue;
-					}
-					sentence.offer(word);
-				}
-				// Add the queue of words representing one sentence into the
-				// queue of sentences.
-				sentences.offer(sentence);
-			});
-
-			return true;
-		} catch (IOException e) {
-			System.out.println(e);
-			throw new RuntimeException("File not found");
-		}
+		
+		currentArticle++;
+		sentences = articles.get(currentArticle).sentences();
+		return true;
 	}
 
 	@Override
@@ -79,7 +76,7 @@ public class ReutersSource implements IDocumentSource {
 
 	/**
 	 * Indicates whether the current document has another sentence or not.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override

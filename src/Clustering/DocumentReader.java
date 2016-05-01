@@ -73,7 +73,6 @@ public final class DocumentReader {
 	// Reads all documents from the specified source.
 	public void Read() {
 		while (source_.HasDocument()) {
-			System.out.println("Source has document");
 			ReadDocument(source_);
 		}
 
@@ -166,6 +165,7 @@ public final class DocumentReader {
 
 	// Computes the weight of each read word.
 	private void ComputeWeights() {
+		System.out.println("Computing weights.");
 		// The importante is equal to the product between the number of times
 		// the word appears in the document (term frequence) with
 		// the inverted document frequence. It is presumed that the term

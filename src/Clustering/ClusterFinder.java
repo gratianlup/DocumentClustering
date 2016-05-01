@@ -78,7 +78,7 @@ public final class ClusterFinder {
 		// 'Other'.
 		reader = new DocumentReader(source);
 		reader.Read();
-
+		System.out.println("Finished reading from this source.");
 		Set<Cluster> baseClusterSet = reader.GetBaseClusters(minClusterWeight);
 
 		if (baseClusterSet.isEmpty()) {
@@ -93,7 +93,7 @@ public final class ClusterFinder {
 		int limit = Math.min(maxClusters, baseClusterList.size());
 
 		baseClusterSet.clear();
-		baseClusterSet.addAll(baseClusterList.subList(0, limit));		
+		baseClusterSet.addAll(baseClusterList.subList(0, limit));
 		Set<Cluster> finalClusters = merger.MergeClusters(baseClusterSet);
 
 		if (limit < baseClusterSet.size()) {

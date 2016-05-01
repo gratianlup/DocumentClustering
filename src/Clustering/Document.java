@@ -32,10 +32,13 @@
 
 package Clustering;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 public final class Document {
+	private Set<String> topics;
     private ArrayList<Word> words_;
     private LinkedHashMap<Word, Integer> wordCount_;
     private int index_; // The index of the document in the source.
@@ -47,6 +50,7 @@ public final class Document {
         index_ = index;
         words_ = new ArrayList<Word>();
         wordCount_ = new LinkedHashMap<Word, Integer>();
+        topics = new HashSet<>();
     }
 
     /*
@@ -57,7 +61,7 @@ public final class Document {
         // ------------------------------------------------
         words_.add(word);
         Integer count = wordCount_.get(word);
-        
+
         if(count == null) {
             wordCount_.put(word, 1);
         }
@@ -78,13 +82,17 @@ public final class Document {
         assert(word != null);
         // ------------------------------------------------
         Integer count = wordCount_.get(word);
-        
+
         if(count == null) {
             return 0;
         }
         else {
             return count;
         }
+    }
+
+    public void setTopics(Set<String> topics) {
+    	this.topics = topics;
     }
 
     // Returns the term frequence for the specified word,
