@@ -36,5 +36,10 @@ public class SuffixTreeClustering {
 
 		//System.out.println("Number of clusters found using minDegree: " + minDegreeClusters.size());
 		System.out.println("Number of clusters found using MST: " + mstClusters.size());
+
+		for (Cluster c : mstClusters) {
+			c.printArticles(mstSource.articles());
+			System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+		}
 	}
 }
