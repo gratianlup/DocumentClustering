@@ -31,151 +31,163 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package Clustering;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 public final class DocumentReader {
-    // Each sentence must end in an unique word
-    // to be inserted properliy in the suffix tree.
-    // For example, $0, $1, ... $100, ...
-    private static final String END_MARKER = "#";
+	// Each sentence must end in an unique word
+	// to be inserted properliy in the suffix tree.
+	// For example, $0, $1, ... $100, ...
+	private static final String END_MARKER = "#";
 
-    /*
-    * Private members.
-    */
-    private IDocumentSource source_;
-    private LinkedHashMap<String, Word> words_; // Contains all the found words.
-    private HashMap<Word, Integer> wordDf_;     // The number of documents in which a word has been found.
-    private ArrayList<Document> documents_;
-    private int phraseCount_;
-    private SuffixTree tree_;
+	/*
+	 * Private members.
+	 */
+	private IDocumentSource source_;
+	private LinkedHashMap<String, Word> words_; // Contains all the found words.
+	private HashMap<Word, Integer> wordDf_; // The number of documents in which
+											// a word has been found.
+	private ArrayList<Document> documents_;
+	private int phraseCount_;
+	private SuffixTree tree_;
 
-    /*
-     * Constructors.
-     */
-    public DocumentReader(IDocumentSource source) {
-        source_ = source;
-        words_ = new LinkedHashMap<String, Word>();
-        documents_ = new ArrayList<Document>();
-        wordDf_ = new HashMap<Word, Integer>();
-        tree_ = new SuffixTree();
-    }
+	/*
+	 * Constructors.
+	 */
+	public DocumentReader(IDocumentSource source) {
+		source_ = source;
+		words_ = new LinkedHashMap<String, Word>();
+		documents_ = new ArrayList<Document>();
+		wordDf_ = new HashMap<Word, Integer>();
+		tree_ = new SuffixTree();
+	}
 
-    /*
-     * Public methods.
-     */
-    // Reads all documents from the specified source.
-    public void Read() {
-        while(source_.HasDocument()) {
-            ReadDocument(source_);
-        }
+	/*
+	 * Public methods.
+	 */
+	// Reads all documents from the specified source.
+	public void Read() {
+		while (source_.HasDocument()) {
+			ReadDocument(source_);
+		}
 
-        ComputeWeights();
-    }
+		ComputeWeights();
+	}
 
-    public List<Cluster> GetBaseClusters(double minWeight) {
-        return tree_.GetBaseClusters(minWeight);
-    }
+	public Set<Cluster> GetBaseClusters(double minWeight) {
+		return tree_.GetBaseClusters(minWeight);
+	}
 
-    public List<Document> Documents() { return documents_; }
-    public SuffixTree Tree() { return tree_; }
+	public List<Document> Documents() {
+		return documents_;
+	}
 
-    /*
-     * Private methods.
-     */
-    // Reads all sentences from a document and updates the statistics.
-    private Document ReadDocument(IDocumentSource source) {
-        Document doc = new Document(documents_.size());
+	public SuffixTree Tree() {
+		return tree_;
+	}
 
-        while(source.HasSentence()) {
-            ReadSentence(doc, source);
-        }
+	/*
+	 * Private methods.
+	 */
+	// Reads all sentences from a document and updates the statistics.
+	private Document ReadDocument(IDocumentSource source) {
+		Document doc = new Document(documents_.size());
 
-        documents_.add(doc);
-        return doc;
-    }
+		while (source.HasSentence()) {
+			ReadSentence(doc, source);
+		}
 
-    // Reads and parses a sentence from the specified document.
-    private void ReadSentence(Document doc, IDocumentSource source) {
-        int startIndex = doc.Count(); // The number of words before the sentence.
-        int endIndex;
+		documents_.add(doc);
+		return doc;
+	}
 
-        while(source.HasWord()) {
-            // Obtain the word, then update the document and the statistics.
-            String wordStr = source.NextWord();
-            Word word = words_.get(wordStr);
-            
-            if(word != null) {
-                // The word has been found before (possible in other documents too).
-                if(!doc.ContainsWord(word)) {
-                    // This is the first time the word has been found
-                    // in the current docuemtn, add an entry for it.
-                    int newCount = wordDf_.get(word) + 1;
-                    wordDf_.put(word, newCount);
-                }
-            }
-            else {
-                // The first time when the word is found
-                // in any docuemtn, add an entry for it.
-                word = new Word(wordStr);
-                words_.put(wordStr, word);
-                wordDf_.put(word, 1);
-            }
+	// Reads and parses a sentence from the specified document.
+	private void ReadSentence(Document doc, IDocumentSource source) {
+		int startIndex = doc.Count(); // The number of words before the
+										// sentence.
+		int endIndex;
 
-            doc.AddWord(word);
-        }
+		while (source.HasWord()) {
+			// Obtain the word, then update the document and the statistics.
+			String wordStr = source.NextWord();
+			Word word = words_.get(wordStr);
 
-        // Add a sentence end marker (required by the suffix tree).
-        String marker = END_MARKER + Integer.toString(phraseCount_++);
-        Word markerWord = new Word(marker);
-        words_.put(marker, markerWord);
-        wordDf_.put(markerWord, 1);
-        doc.AddWord(markerWord);
+			if (word != null) {
+				// The word has been found before (possible in other documents
+				// too).
+				if (!doc.ContainsWord(word)) {
+					// This is the first time the word has been found
+					// in the current docuemtn, add an entry for it.
+					int newCount = wordDf_.get(word) + 1;
+					wordDf_.put(word, newCount);
+				}
+			} else {
+				// The first time when the word is found
+				// in any docuemtn, add an entry for it.
+				word = new Word(wordStr);
+				words_.put(wordStr, word);
+				wordDf_.put(word, 1);
+			}
 
-        // Add the read sentence to the suffix tree.
-        endIndex = doc.Count();
-        tree_.AddSentence(doc, startIndex, endIndex);
-    }
+			doc.AddWord(word);
+		}
 
-    // Computes the term frequence average for the specified word
-    // for all documents in which it is found.
-    private double AverageTf(Word word) {
-        double sum = 0;
-        int count = documents_.size();
-        
-        for(int i = 0; i < count; i++) {
-            sum += documents_.get(i).TermFrequency(word);
-        }
+		// Add a sentence end marker (required by the suffix tree).
+		String marker = END_MARKER + Integer.toString(phraseCount_++);
+		Word markerWord = new Word(marker);
+		words_.put(marker, markerWord);
+		wordDf_.put(markerWord, 1);
+		doc.AddWord(markerWord);
 
-        // It is guaranteed that the word appears at least once.
-        return sum / (double)wordDf_.get(word);
-    }
+		// Add the read sentence to the suffix tree.
+		endIndex = doc.Count();
+		tree_.AddSentence(doc, startIndex, endIndex);
+	}
 
-    // Computes the weight of each read word.
-    private void ComputeWeights() {
-        // The importante is equal to the product between the number of times
-        // the word appears in the document (term frequence) with 
-        // the inverted document frequence. It is presumed that the term frequence
-        // has been already computed and is availalbe in the 'Weight' field
-        // of each word, and the term frequence must be found in the 'wordDf' map.
-        Iterator<Word> wordIt = words_.values().iterator();
-        int docs = documents_.size();
-        
-        if(docs == 0) {
-            return;
-        }
-        
-        while(wordIt.hasNext()) {
-            Word word = wordIt.next();
-            double df = (double)wordDf_.get(word);
+	// Computes the term frequence average for the specified word
+	// for all documents in which it is found.
+	private double AverageTf(Word word) {
+		double sum = 0;
+		int count = documents_.size();
 
-            // Compute the weight ('df' guarantted greater than zero).
-            double weight = (1.0 + Math.log10(AverageTf(word))) *
-                            Math.log10(1.0 + ((double)docs / df));
-            word.SetWeight(weight);
-        }
-    }
+		for (int i = 0; i < count; i++) {
+			sum += documents_.get(i).TermFrequency(word);
+		}
+
+		// It is guaranteed that the word appears at least once.
+		return sum / (double) wordDf_.get(word);
+	}
+
+	// Computes the weight of each read word.
+	private void ComputeWeights() {
+		System.out.println("Computing weights.");
+		// The importante is equal to the product between the number of times
+		// the word appears in the document (term frequence) with
+		// the inverted document frequence. It is presumed that the term
+		// frequence
+		// has been already computed and is availalbe in the 'Weight' field
+		// of each word, and the term frequence must be found in the 'wordDf'
+		// map.
+		Iterator<Word> wordIt = words_.values().iterator();
+		int docs = documents_.size();
+
+		if (docs == 0) {
+			return;
+		}
+
+		while (wordIt.hasNext()) {
+			Word word = wordIt.next();
+			double df = (double) wordDf_.get(word);
+
+			double tf = AverageTf(word);
+			double idf = Math.log10(((double) docs / df));
+			double weight = tf * idf;
+			word.SetWeight(weight);
+		}
+	}
 }

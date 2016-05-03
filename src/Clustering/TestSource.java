@@ -31,10 +31,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package Clustering;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
 
 public final class TestSource implements IDocumentSource {
-    private String file_;
     private BufferedReader stream_;
     private String[] sentences_;
     private String[] words_;
@@ -42,7 +44,6 @@ public final class TestSource implements IDocumentSource {
     private int wordPosition_;
 
     public TestSource(String file) throws IOException {
-        file_ = file;
         stream_ = new BufferedReader(new FileReader(file));
     }
 
@@ -60,7 +61,7 @@ public final class TestSource implements IDocumentSource {
             if(HasDocument() == false) {
                 return false;
             }
-            
+
             ReadLine();
             return (sentences_ != null) && (sentences_.length > 0);
         }
@@ -79,7 +80,7 @@ public final class TestSource implements IDocumentSource {
             if(HasSentence() == false) {
                 return false;
             }
-            
+
             ReadSentence();
             return (words_ != null) && (words_.length > 0);
         }
@@ -91,6 +92,10 @@ public final class TestSource implements IDocumentSource {
         else {
             return true;
         }
+    }
+
+    public List<Article> articles() {
+    	throw new RuntimeException("Articles doesn't exist.");
     }
 
     public String NextWord() {

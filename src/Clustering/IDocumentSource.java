@@ -32,9 +32,29 @@
 
 package Clustering;
 
+import java.util.List;
+
 public interface IDocumentSource {
+	/**
+	 * Whether or not this document source has another document.
+	 */
     boolean HasDocument();
+
+    /**
+     * Whether or not this document source has another sentence.
+     */
     boolean HasSentence();
+
+    /**
+     * Whether or not this document source has another word.
+     */
     boolean HasWord();
+
+    /**
+     * Returns the next word in the current sentence.
+     * @return the next word.
+     */
     String NextWord();
+
+    List<Article> articles();
 }

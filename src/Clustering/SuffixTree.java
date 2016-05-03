@@ -33,8 +33,10 @@
 package Clustering;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public final class SuffixTree {
     // Represents a node in the tree.
@@ -72,8 +74,8 @@ public final class SuffixTree {
             return edges_.get(word);
         }
 
-        public boolean IsLeaf() { 
-            return edges_.isEmpty(); 
+        public boolean IsLeaf() {
+            return edges_.isEmpty();
         }
 
         @Override
@@ -113,7 +115,7 @@ public final class SuffixTree {
 
         public void SetFirstIndex(int value) { firstIndex_ = value; }
         public void SetLastIndex(int value) { lastIndex_ = value; }
-        
+
         public Node PreviousNode() { return prevNode_; }
         public void SetPreviousNode(Node value) { prevNode_ = value; }
 
@@ -128,7 +130,7 @@ public final class SuffixTree {
         public String toString() {
             String temp = "";
             for(int i = firstIndex_; i <= lastIndex_; i++) {
-                temp += tempDoc.WordAt(i).Word() + " ";
+                temp += tempDoc.WordAt(i).GetWord() + " ";
             }
 
             return temp;
@@ -214,19 +216,18 @@ public final class SuffixTree {
         phreases_++;
     }
 
-    // Returns a list with all base clusters
-    // having a weight at lest equal to the specified one.
-    public List<Cluster> GetBaseClusters(double minWeight) {
-        ArrayList<Cluster> clusters =  new ArrayList<Cluster>();
+    // Returns a set containing the base clusters with weight > minWeight.
+    public Set<Cluster> GetBaseClusters(double minWeight) {
+        Set<Cluster> clusters =  new HashSet<>();
         ArrayList<Edge> edges = new ArrayList<Edge>();
 
         // Search the clusters on all edges originating from the root.
         Iterator<Edge> edgeIt = root_.Edges();
-        
+
         while(edgeIt.hasNext()) {
             Edge edge = edgeIt.next();
             edges.add(edge);
-            
+
             if(!edge.NextNode().IsLeaf()) {
                 GetBaseClustersImpl(edge.NextNode(), clusters, edges, minWeight);
             }
@@ -246,7 +247,7 @@ public final class SuffixTree {
         Node parent = null;
         Node lastParent = null; // Used to create links between the nodes.
         Word word = tempDoc.WordAt(wordIndex);
-        
+
         // An edge is added (if necessary) for all nodes found
         // between the active one and the last one. The active node
         // is the first node which is not a leaf (a leaf node will never
@@ -267,12 +268,12 @@ public final class SuffixTree {
             else if(activePoint_.IsImplicit()) {
                 // The edge must be split before the word can be added.
                 Edge edge = parent.GetEdge(tempDoc.WordAt(activePoint_.firstIndex_));
-                
+
                 if(tempDoc.WordAt(edge.FirstIndex() + activePoint_.Span() + 1).equals(word)) {
                     // The word is already in the right place.
                     break;
                 }
-                
+
                 parent = SplitEdge(edge, activePoint_, document);
             }
 
@@ -336,12 +337,12 @@ public final class SuffixTree {
     // to the end of the suffix is found.
     private void MakeCanonic(Suffix suffix) {
         if(suffix.IsExplicit()) {
-            return; 
+            return;
         }
-        
+
         Word word = tempDoc.WordAt(suffix.FirstIndex());
         Edge edge = suffix.Origin().GetEdge(word);
-        
+
         while(edge.Span() <= suffix.Span()) {
             suffix.SetFirstIndex(suffix.FirstIndex() + edge.Span() + 1);
             suffix.SetOrigin(edge.NextNode());
@@ -368,7 +369,7 @@ public final class SuffixTree {
         return phrase;
     }
 
-    private Cluster GetBaseClustersImpl(Node node, List<Cluster> clusters,
+    private Cluster GetBaseClustersImpl(Node node, Set<Cluster> clusters,
                                         List<Edge> edges, double minWeight) {
         assert(!node.IsLeaf());
         assert(edges.size() > 0);
@@ -376,11 +377,11 @@ public final class SuffixTree {
         // Create a new cluster and set the associated sentence.
         Cluster cluster = new Cluster(MakePhrase(edges));
         Iterator<Edge> edgeIt = node.Edges();
-        
+
         while(edgeIt.hasNext()) {
             Edge edge = edgeIt.next();
             Node nextNode = edge.NextNode();
-            
+
             if(nextNode.IsLeaf()) {
                 // Add the document to the cluster.
                 if(!cluster.Documents().contains(edge.Document())) {
@@ -395,7 +396,7 @@ public final class SuffixTree {
                 Cluster child = GetBaseClustersImpl(nextNode, clusters, edges, minWeight);
                 edges.remove(edges.size() - 1);
                 int count = child.Documents().size();
-                
+
                 for(int i = 0; i < count; i++) {
                     Document doc = child.Documents().get(i);
 
@@ -409,11 +410,11 @@ public final class SuffixTree {
         // The cluster is selected only if its weight
         // is at least equal to the minimum requested weight.
         cluster.ComputeWeight();
-        
+
         if(cluster.Weight() > minWeight) {
             clusters.add(cluster);
         }
-        
+
         return cluster;
     }
 }

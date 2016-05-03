@@ -31,177 +31,184 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package Clustering;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
-public final class Cluster implements Comparable {
-    private ArrayList<Document> documents_;
-    private List<Phrase> phrases_;
-    private double weight_;
-    private String label_;
+public final class Cluster implements Comparable<Cluster> {
+	private ArrayList<Document> documents_;
+	private List<Phrase> phrases_;
+	private double weight_;
+	private String label_;
 
-    /*
-    * Constructors.
-    */
-    public Cluster(int docCapacity, int phraseCapacity) {
-        documents_ = new ArrayList<Document>(docCapacity);
-        phrases_ = new ArrayList<Phrase>(phraseCapacity);
-    }
+	/*
+	 * Constructors.
+	 */
+	public Cluster(int docCapacity, int phraseCapacity) {
+		documents_ = new ArrayList<Document>(docCapacity);
+		phrases_ = new ArrayList<Phrase>(phraseCapacity);
+	}
 
-    public Cluster(Phrase phrase) {
-        this(4, 1);
-        phrases_.add(phrase);
-    }
+	public Cluster(Phrase phrase) {
+		this(4, 1);
+		phrases_.add(phrase);
+	}
 
-    /*
-    * Public methods.
-    */
-    // Computes the weight of the clusters based on the contained documents.
-    public void ComputeWeight() {
-        // The weight is equal to the producet between the number of documents,
-        // the (adjusted) length of the senteces and the sum of the weight
-        // of each words part of the sentences.
-        double wordWeight = 0;        
-        int count = phrases_.size();
-        
-        for(int i = 0; i < count; i++) {
-            wordWeight += phrases_.get(i).Weight();
-        }
+	/*
+	 * Public methods.
+	 */
+	// Computes the weight of the clusters based on the contained documents.
+	public void ComputeWeight() {
+		// The weight is equal to the product between the number of documents,
+		// the (adjusted) length of the sentences and the sum of the weight
+		// of each words part of the sentences.
+		double wordWeight = 0;
+		int count = phrases_.size();
 
-        weight_ = documents_.size() * PhrasesWeight() * wordWeight;
-    }
+		for (int i = 0; i < count; i++) {
+			wordWeight += phrases_.get(i).Weight();
+		}
 
-    // Verifies if the cluster and the specified one are similar
-    // (they haev some documents in common).
-    public boolean IsSimilarTo(Cluster other, double overlapDegree) {
-        assert(other != null);
-        // ------------------------------------------------
-        // Find the common documents. If there are only a few documents,
-        // a linear search is used; otherwise the search uses a hash table.
-        int common = 0;
+		weight_ = documents_.size() * PhrasesWeight() * wordWeight;
+	}
 
-        if((documents_.size() <= 3) &&
-           (other.documents_.size() <= 3)) {
-            // Few documents case, do a linear search.
-            for(int i = 0; i < documents_.size(); i++) {
-                Document doc = documents_.get(i);
-                if(other.documents_.contains(doc)) {
-                    common++;
-                }
-            }
-        }
-        else {
-            // Many documents case, use a hash table.
-            Hashtable<Document, Document> hash = new Hashtable<Document, Document>();
-            int count = documents_.size();
-            
-            for(int i = 0; i < count; i++) {
-                Document doc = documents_.get(i);
-                hash.put(doc, doc);
-            }
+	/*
+	 * Returns the 'distance' between this cluster and another. The distance can
+	 * be thought of as the average similarity of the documents in the two clusters.
+	 * i.e. a measure of how overlapping the clusters are. If the two clusters are exactly
+	 * identical then the similarity would be 1. If there is no overlap then the distance would be 0.
+	 */
+	public double similarity(Cluster other) {
+		Hashtable<Document, Document> hash = new Hashtable<Document, Document>();
 
-            // Check which of the documents from the other clusters
-            // are found in the hash table.
-            count = other.documents_.size();
-            
-            for(int i = 0; i < count; i++) {
-                if(hash.containsKey(other.documents_.get(i))) {
-                    common++;
-                }
-            }
-        }
+		for (int i = 0; i < documents_.size(); i++) {
+			Document doc = documents_.get(i);
+			hash.put(doc, doc);
+		}
 
-        return ((double)common / (double)documents_.size()) > overlapDegree &&
-               ((double)common / (double)other.documents_.size()) > overlapDegree;
-    }
+		// Check which of the documents from the other clusters
+		// are found in the hash table.
+		double common = 0;
+		for (int i = 0; i < other.documents_.size(); i++) {
+			if (hash.containsKey(other.documents_.get(i))) {
+				common++;
+			}
+		}
 
-    // Unifies all clusters from the specified list
-    // into a single cluster containing the union of the documents.
-    public static Cluster Merge(List<Cluster> clusters) {
-        assert(clusters != null);
-        // ------------------------------------------------
-        ArrayList<Phrase> allPhrases = new ArrayList<Phrase>();
-        Cluster newCluster = new Cluster(clusters.size() * 2,
-                                         clusters.size());
-        Hashtable<Document, Document> hash = new Hashtable<Document, Document>();
+		double dist_forward = common / (double) documents_.size();
+		double dist_backward = common / (double) other.documents_.size();
 
-        // Each document must appear a single time in the new cluster
-        // (the list must behave as a mathematical set).
-        for(int i = 0; i < clusters.size(); i++) {
-            Cluster cluster = clusters.get(i);
-            List<Document> docs = cluster.Documents();
+		// Return the average distance between these two clusters.
+		return (dist_forward + dist_backward) / 2.0 ;
+	}
 
-            for(int j = 0; j < docs.size(); j++) {
-                Document doc = docs.get(j);
-                hash.put(doc, doc);
-            }
+	// Unifies all clusters from the specified list
+	// into a single cluster containing the union of the documents.
+	public static Cluster Merge(Set<Cluster> clusters) {
+		assert(clusters != null);
 
-            // All sentences from the clusters must appear in the new one.
-            List<Phrase> phrases = cluster.Phrases();
-            
-            for(int j = 0; j < phrases.size(); j++) {
-                allPhrases.add(phrases.get(j));
-            }
-        }
+		Cluster newCluster = new Cluster(clusters.size() * 2, clusters.size());
+		Set<Document> allDocuments = new HashSet<>();
 
-        // Add the documents to the new cluster.
-        Iterator<Document> docIt = hash.keySet().iterator();
-        
-        while(docIt.hasNext()) {
-            newCluster.documents_.add(docIt.next());
-        }
+		// Each document must appear a single time in the new cluster, as must
+		// each Phrase in each original cluster.
+		for (Cluster c : clusters) {
+			allDocuments.addAll(c.Documents());
+			newCluster.Phrases().addAll(c.Phrases());
+		}
 
-        // Associated the sentences with the new cluster.
-        newCluster.SetPhrases(allPhrases);
-        return newCluster;
-    }
+		// Add the documents to the new cluster.
+		newCluster.Documents().addAll(allDocuments);
+		return newCluster;
+	}
 
-    public double Weight() { return weight_; }
-    public List<Document> Documents() { return documents_; }
+	public static Cluster Merge(List<Cluster> clusters) {
+		Set<Cluster> clusterSet = new HashSet<>();
+		clusterSet.addAll(clusters);
+		return Merge(clusterSet);
+	}
 
-    public List<Phrase> Phrases() { return phrases_; }
-    public void SetPhrases(List<Phrase> value) { phrases_ = value; }
-    
-    public String Label() { return label_; }
-    public void SetLabel(String value) { label_ = value; }
+	public double Weight() {
+		return weight_;
+	}
 
-    /*
-    * Private methods.
-    */
-    private double PhrasesWeight() {
-        double sum = 0;
-        int count = phrases_.size();
-        
-        for(int i = 0; i < count; i++) {
-            sum += phrases_.get(i).WordCount();            
-        }
+	public List<Document> Documents() {
+		return documents_;
+	}
 
-        if(sum < 2) {
-            return 0.5;
-        }
-        else {
-            return Math.min(6, sum);
-        }
-    }
+	public List<Phrase> Phrases() {
+		return phrases_;
+	}
 
-    public int compareTo(Object obj) {
-        // Used when sorting clusters based on their weight.
-        if(this == obj) {
-            return 0;
-        }
+	public void SetPhrases(List<Phrase> value) {
+		phrases_ = value;
+	}
 
-        Cluster other = (Cluster)obj;
-        
-        if(weight_ < other.weight_) {
-            return 1;
-        }
-        else if(weight_ > other.weight_) {
-            return -1;
-        }
-        else {
-            return 0;
-        }
-    }
+	public String Label() {
+		return label_;
+	}
+
+	public void SetLabel(String value) {
+		label_ = value;
+	}
+
+	/*
+	 * Private methods.
+	 */
+	private double PhrasesWeight() {
+		double sum = 0;
+		int count = phrases_.size();
+
+		for (int i = 0; i < count; i++) {
+			sum += phrases_.get(i).WordCount();
+		}
+
+		if (sum < 2) {
+			return 0.5;
+		} else {
+			return Math.min(6, sum);
+		}
+	}
+
+	public int compareTo(Cluster other) {
+		// Used when sorting clusters based on their weight.
+		if (other == this) {
+			return 0;
+		}
+
+		// Clusters with a lower weight come first.
+		return ((int) other.weight_ - (int) weight_);
+	}
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Cluster: ");
+		sb.append(label_);
+		sb.append("; Weight: ");
+		sb.append(weight_);
+		sb.append("; Number docs: ");
+		sb.append(documents_.size());
+		for (Phrase p : phrases_) {
+			sb.append(p.toString());
+		}
+		return sb.toString();
+	}
+	
+	public List<Article> articles(List<Article> articles) {
+		List<Article> retArticles = new ArrayList<>();
+		for (Document d : documents_) {
+			retArticles.add(articles.get(d.Index()));
+		}
+		return retArticles;
+	}
+
+	public void printArticles(List<Article> articles) {
+		for (Document d : documents_) {
+			System.out.println("--------------------------------------");
+			System.out.println(articles.get(d.Index()).bodyTag());
+		}
+	}
 }
