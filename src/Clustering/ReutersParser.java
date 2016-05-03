@@ -38,7 +38,7 @@ public class ReutersParser {
 			.map(ReutersParser::toBufferedReader)
 			.flatMap(this::splitFile)
 			.map(this::parseArticle)
-			.filter(a -> !a.topics.isEmpty())
+			.filter(a -> !a.topics().isEmpty())
 			.filter(a -> !a.bodyWords().isEmpty())
 			.collect(Collectors.toList());
 	}

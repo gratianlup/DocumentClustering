@@ -1,17 +1,8 @@
 package Clustering;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Document source suitable for representing the Reuters document corpus (or any
@@ -23,9 +14,7 @@ public class ReutersSource implements IDocumentSource {
 
 	private List<Article> articles;
 	private int currentArticle;
-
-	/* The list of files making up the Reuters corpus. */
-	private Queue<File> files;
+	private final int n_documents;
 
 	/* A collection of the sentences that make up the current document */
 	private Queue<Queue<String>> sentences;
@@ -33,11 +22,9 @@ public class ReutersSource implements IDocumentSource {
 	/* A collection of the words that make up the current sentence */
 	private Queue<String> currSentence;
 
-	/* The topics included in the current document. */
-	private Set<String> currTopics;
-
-	public ReutersSource(File folder) {
+	public ReutersSource(File folder, int n_documents) {
 		this.articles = new ReutersParser(folder).parse();
+		this.n_documents = n_documents;
 		currentArticle = 0;
 	}
 
@@ -51,10 +38,11 @@ public class ReutersSource implements IDocumentSource {
 	 * Returns whether a document was successfully read or not.
 	 */
 	public boolean readDocument() {
-		if (currentArticle > 200) {
-			System.out.println("Terminating at 100 articles for testing.");
+		if (currentArticle >= n_documents) {
+			System.out.println("Terminating at " + n_documents + " articles for testing...");
 			return false;
 		}
+		
 		if (articles == null || articles.isEmpty() || currentArticle >= articles.size() - 1) {
 			sentences.clear();
 			System.out.println("Read all documents from this source");

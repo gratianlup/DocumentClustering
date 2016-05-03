@@ -84,6 +84,10 @@ public class ClusterGraph {
 				// to the connected component that we're currently building up.
 				visited.add(gv);
 				connectedVertices.add(gv);
+				if (edges.get(gv) == null) {
+					// This vertex is in its own cluster.
+					continue;
+				}
 				connectedEdges.put(gv, edges.get(gv));
 
 				for (GraphEdge ge : edges.get(gv)) {
@@ -148,6 +152,10 @@ public class ClusterGraph {
 	public static ClusterGraph removeLargestEdges(ClusterGraph cg, int numEdgesToRemove) {
 		// We use a list here so that we can sort the edges by weight and index
 		// the heaviest/lightest etc.
+		if (numEdgesToRemove > cg.getUniqueEdges().size()) {
+			return new ClusterGraph(cg.vertices(), new HashMap<GraphVertex, Set<GraphEdge>>());
+		}
+		
 		List<GraphEdge> uniqueEdges = new ArrayList<>();
 		uniqueEdges.addAll(cg.getUniqueEdges());
 		Collections.sort(uniqueEdges);
@@ -232,23 +240,22 @@ public class ClusterGraph {
 	public static ClusterGraph buildGraph(Set<GraphVertex> vertices, double minSimilarity) {
 		Map<GraphVertex, Set<GraphEdge>> edges = new HashMap<>();
 
-		for (GraphVertex v : vertices) {
-			for (GraphVertex j : vertices) {
-				if (v.equals(j)) {
-					// We don't allow for individual incidence in the cluster graph.
-					continue;
-				}
+		Object[] verticesArr = vertices.toArray();
+		for (int i = 0; i < verticesArr.length; i++) {
+			for (int j = i + 1; j < verticesArr.length; j++) {
+				GraphVertex va = (GraphVertex) verticesArr[i];
+				GraphVertex vb = (GraphVertex) verticesArr[j];
 
 				// Similarity is symmetric, so only need to check one way.
-				double similarity = v.cluster().similarity(j.cluster());
+				double similarity = va.cluster().similarity(vb.cluster());
 				if (similarity >= minSimilarity) {
 					// If the similarity between these two clusters is larger than
 					// the minimum similarity specified, then let's connect them by
 					// constructing an edge between the two wrapper vertices and adding
 					// it to each of their adjacency sets.
-					GraphEdge edge = new GraphEdge(v, j, 1 - similarity);
-					addEdge(v, edge, edges);
-					addEdge(j, edge, edges);
+					GraphEdge edge = new GraphEdge(va, vb, 1 - similarity);
+					addEdge(va, edge, edges);
+					addEdge(vb, edge, edges);
 				}
 			}
 		}

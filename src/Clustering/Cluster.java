@@ -196,11 +196,19 @@ public final class Cluster implements Comparable<Cluster> {
 		}
 		return sb.toString();
 	}
+	
+	public List<Article> articles(List<Article> articles) {
+		List<Article> retArticles = new ArrayList<>();
+		for (Document d : documents_) {
+			retArticles.add(articles.get(d.Index()));
+		}
+		return retArticles;
+	}
 
 	public void printArticles(List<Article> articles) {
 		for (Document d : documents_) {
 			System.out.println("--------------------------------------");
-			System.out.println(articles.get(d.Index()).bodyTag);
+			System.out.println(articles.get(d.Index()).bodyTag());
 		}
 	}
 }

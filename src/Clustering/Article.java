@@ -8,9 +8,9 @@ import java.util.Set;
 
 public class Article {
 
-	public Set<String> topics;
-	public String titleTag;
-	public String bodyTag;
+	private Set<String> topics;
+	private String titleTag;
+	private String bodyTag;
 
 	public Article(String titleTag, String bodyTag, Set<String> topics) {
 		this.titleTag = titleTag;
@@ -45,6 +45,18 @@ public class Article {
 		}
 
 		return sentences;
+	}
+	
+	public Set<String> topics() {
+		return this.topics;
+	}
+	
+	public String titleTag() {
+		return this.titleTag;
+	}
+	
+	public String bodyTag() {
+		return this.bodyTag;
 	}
 
 }

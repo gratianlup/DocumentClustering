@@ -28,25 +28,31 @@ public class MSTMerger extends AbstractOverlappingClusterMerger {
 	public Set<Cluster> MergeClusters(Set<Cluster> baseClustersToMerge) {
 		System.out.println("Merging clusters");
 		// Generate the base cluster graph.
+		System.out.println("Generating " + baseClustersToMerge.size() + " graph vertices...");
 		Set<GraphVertex> vertices = generateVertices(baseClustersToMerge);
+		System.out.println("Building cluster graph...");
 		ClusterGraph cg = ClusterGraph.buildGraph(vertices, this.minOverlapDegree);
 
 		// Now that we have the base cluster graph, produce a MST on it.
+		System.out.println("Building the MST...");
 		ClusterGraph mst = ClusterGraph.buildMST(cg);
 		System.out.println("Number of unique edges in MST: " + mst.getUniqueEdges().size());
 
 		// Now that we have a MST on the base cluster graph, remove the
 		// numberOfClustersToFind - 1 largest edges in order to leave
 		// numberOfClustersToFind connected components (final clusters).
+		System.out.println("Removing the " + numberOfEdgesToRemove + " largest edges in the MST...");
 		ClusterGraph finalGraph = ClusterGraph.removeLargestEdges(mst, numberOfEdgesToRemove);
 		System.out.println("Number of unique edges in finalGraph: " + finalGraph.getUniqueEdges().size());
 
 		// Now that we have the final cluster graph, we need to merge the clusters represented in
 		// each different component into their own cluster.
+		System.out.println("Finding the connected components in the final graph...");
 		Set<ClusterGraph> connectedComponents = finalGraph.getConnectedComponents();
 		System.out.println("Number of connected components found: " + connectedComponents.size());
 
 		Set<Cluster> finalClusters = new HashSet<>();
+		System.out.println("Merging the clusters within each connected component...");
 		for (ClusterGraph connectedComponent : connectedComponents) {
 			finalClusters.add(Cluster.Merge(connectedComponent.getClusters()));
 		}
